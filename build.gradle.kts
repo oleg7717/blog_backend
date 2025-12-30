@@ -43,6 +43,7 @@ dependencies {
     implementation("com.fasterxml.jackson.core:jackson-databind")
     implementation("com.fasterxml.jackson.core:jackson-core")
     implementation("com.fasterxml.jackson.core:jackson-annotations")
+    implementation("org.openapitools:jackson-databind-nullable:0.2.6")
 
     // Servlet API
     compileOnly("jakarta.servlet:jakarta.servlet-api:6.1.0")

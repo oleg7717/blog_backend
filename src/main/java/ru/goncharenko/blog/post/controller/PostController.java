@@ -2,13 +2,16 @@ package ru.goncharenko.blog.post.controller;
 
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import ru.goncharenko.blog.dto.AbstractPageResponse;
+import ru.goncharenko.blog.post.dto.PostCreateDTO;
 import ru.goncharenko.blog.post.model.Post;
 import ru.goncharenko.blog.post.service.PostService;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/posts")
@@ -20,9 +23,19 @@ public class PostController {
 	}
 
 	@GetMapping
-	@ResponseBody
-	public List<Post> getPosts() {
-		return service.getAllPosts();
+	public AbstractPageResponse index(@RequestParam(required = false, name = "search") String search,
+	                                  @RequestParam(name = "pageSize") int pageSize,
+	                                  @RequestParam(name = "pageNumber") int pageNumber) {
+		return service.getPosts(search, pageSize, pageNumber);
 	}
 
+	@GetMapping(path = "/{id}")
+	public Post showPost(@PathVariable(name = "id") long id) {
+		return service.getPost(id);
+	}
+
+	@PostMapping()
+	public Post createPost(@RequestBody PostCreateDTO postDTO) {
+		return service.createPost(postDTO);
+	}
 }
