@@ -1,14 +1,18 @@
 package ru.goncharenko.blog.post.repository;
 
 import ru.goncharenko.blog.post.dto.PostCreateDTO;
+import ru.goncharenko.blog.post.dto.PostUpdateDTO;
 import ru.goncharenko.blog.post.model.Post;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface PostRepository {
 	List<Post> getPosts(String search, int limit, int offset);
 
-	Post getPost(long id);
+	Optional<Post> findPostById(long id);
 
-	Post createPost(PostCreateDTO postDTO);
+	Optional<Post> newPost(PostCreateDTO postDTO);
+
+	Optional<Post> update(long id, PostUpdateDTO postDTO);
 }

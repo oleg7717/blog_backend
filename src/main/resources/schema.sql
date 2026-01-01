@@ -7,10 +7,12 @@ create table if not exists posts(
 );
 
 create table if not exists tags(
-  postid bigserial,
-  tagname varchar(50) not null
+  postid bigserial not null,
+  tagname varchar(50) not null,
+  unique (postid, tagname)
 );
 
+CREATE INDEX IF NOT EXISTS idx_tags_postid ON tags (postid);
 
 TRUNCATE posts RESTART IDENTITY;
 insert into posts(title, text, likesCount, commentsCount) values ('Пост про спорт', 'Нет ничего проще, чем составить символическую сборную лучших баскетболистов XXI века в рамках подведения итогов первых 25 лет. ' ||

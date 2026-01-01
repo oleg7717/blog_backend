@@ -7,12 +7,14 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.goncharenko.blog.post.dto.PostCreateDTO;
+import ru.goncharenko.blog.post.dto.PostUpdateDTO;
 import ru.goncharenko.blog.post.model.Post;
+import ru.goncharenko.blog.utils.TextUtil;
 
 import java.sql.PreparedStatement;
-import java.sql.Statement;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Repository
 public class JdbcNativePostRepository implements PostRepository {
@@ -36,18 +38,18 @@ public class JdbcNativePostRepository implements PostRepository {
 	}
 
 	@Override
-	public Post getPost(long id) {
-		return DataAccessUtils.singleResult(jdbcTemplate.query(
+	public Optional<Post> findPostById(long id) {
+		return Optional.ofNullable(DataAccessUtils.singleResult(jdbcTemplate.query(
 				"select id, title, text, likesCount, commentsCount from posts where id = " + id,
 				map(false)
-		));
+		)));
 	}
 
 	private RowMapper<Post> map(boolean substring) {
 		return (rs, rowNum) -> new Post(
 				rs.getLong("id"),
 				rs.getString("title"),
-				getSubstringText(substring, rs.getString("text")),
+				TextUtil.getSubstringText(substring, rs.getString("text")),
 				jdbcTemplate.query(
 						"select tagname from tags where postid = " + rs.getLong("id"),
 						(resultSet, rowNumber) -> resultSet.getString("tagName")
@@ -58,14 +60,14 @@ public class JdbcNativePostRepository implements PostRepository {
 	}
 
 	@Override
-	public Post createPost(PostCreateDTO postDTO) {
+	public Optional<Post> newPost(PostCreateDTO postDTO) {
 		// Используем keyHolder для получения уникального идентификаотра записи
 		KeyHolder keyHolder = new GeneratedKeyHolder();
 		// Формируем insert-запрос для создания поста
 		String sql = "insert into posts(title, text, likesCount, commentsCount) values(?, ?, ?, ?)";
 		jdbcTemplate.update(
 				connection -> {
-					PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+					PreparedStatement ps = connection.prepareStatement(sql, new String[]{"id"});
 					ps.setString(1, postDTO.getTitle());
 					ps.setString(2, postDTO.getText());
 					ps.setLong(3, 0);
@@ -75,16 +77,29 @@ public class JdbcNativePostRepository implements PostRepository {
 				keyHolder);
 
 		// Формируем insert-запросы для создания тегов
-		long recordUID = (long) keyHolder.getKeys().get("id");
-		postDTO.getTags().forEach(tag -> {
-			jdbcTemplate.update("insert into tags(postid, tagName) values(?, ?)",
-					recordUID, tag);
-		});
+		long recordUID = Objects.requireNonNull(keyHolder.getKey()).longValue();
+		creatTags(postDTO.getTags(), recordUID);
 
-		return getPost(recordUID);
+		return findPostById(recordUID);
 	}
 
-	private String getSubstringText(boolean substring, String text) {
-		return text.length() > 128 && substring ? text.substring(0, 128).trim() + "..." : text;
+	@Override
+	public Optional<Post> update(long id, PostUpdateDTO postDTO) {
+		jdbcTemplate.update("update posts set title = ?, text = ? where id = ?",
+				postDTO.getTitle(),
+				postDTO.getText(),
+				id);
+		creatTags(postDTO.getTags(), id);
+
+		return findPostById(id);
+	}
+
+	private void creatTags(List<String> tags, long recordUID) {
+		tags.forEach(tag -> {
+			jdbcTemplate.update("insert into tags(postid, tagName) values(?, ?) " +
+							"on conflict (postid, tagName) do nothing",
+					recordUID,
+					tag);
+		});
 	}
 }
