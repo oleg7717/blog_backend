@@ -1,13 +1,11 @@
 package ru.goncharenko.blog.dto;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.experimental.SuperBuilder;
 
 @Getter
-@SuperBuilder
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public class ApiErrorResponse extends ApiResponse {
+@Builder
+public class ApiErrorResponse implements ApiResponse {
 	private String message;
 	private int statusCode;
 
