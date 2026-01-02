@@ -2,7 +2,7 @@ package ru.goncharenko.blog.post.dto;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.goncharenko.blog.dto.ApiResponse;
+import ru.goncharenko.blog.response.ApiResponse;
 
 import java.util.List;
 

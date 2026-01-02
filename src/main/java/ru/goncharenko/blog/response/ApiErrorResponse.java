@@ -1,4 +1,4 @@
-package ru.goncharenko.blog.dto;
+package ru.goncharenko.blog.response;
 
 import lombok.Builder;
 import lombok.Getter;

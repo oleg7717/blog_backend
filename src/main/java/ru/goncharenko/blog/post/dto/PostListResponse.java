@@ -2,7 +2,7 @@ package ru.goncharenko.blog.post.dto;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.goncharenko.blog.dto.PageableApiResponse;
+import ru.goncharenko.blog.response.PageableApiResponse;
 
 @Getter
 @Setter

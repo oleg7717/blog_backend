@@ -83,15 +83,16 @@ public class JdbcNativePostRepository implements PostRepository {
 	}
 
 	@Override
-	public Optional<Post> update(Long id, PostUpdateDTO postDTO) {
+	public Optional<Post> update(PostUpdateDTO postDTO) {
 		jdbcTemplate.update("update posts set title = ?, text = ? where id = ?",
 				postDTO.getTitle(),
 				postDTO.getText(),
-				id);
+				postDTO.getId()
+		);
 		// ToDo Нужно обновлять теги, а не только добавлять
-		creatTags(postDTO.getTags(), id);
+		creatTags(postDTO.getTags(), postDTO.getId());
 
-		return findById(id);
+		return findById(postDTO.getId());
 	}
 
 	private void creatTags(List<String> tags, long recordUID) {
@@ -117,7 +118,8 @@ public class JdbcNativePostRepository implements PostRepository {
 					PreparedStatement ps = connection.prepareStatement(sql, new String[]{"likescount"});
 					ps.setLong(1, id);
 					return ps;
-				}, keyHolder);
+				}, keyHolder
+		);
 
 		return Optional.ofNullable(keyHolder.getKey())
 				.map(Number::longValue)

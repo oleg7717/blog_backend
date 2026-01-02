@@ -6,12 +6,11 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-import ru.goncharenko.blog.dto.ApiErrorResponse;
+import ru.goncharenko.blog.response.ApiErrorResponse;
 import ru.goncharenko.blog.exception.ResourceNotFoundException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
-	private final String unexpectedErrorText = "An unexpected error occurred: ";
 
 	@ExceptionHandler(ResourceNotFoundException.class)
 	@ResponseBody
@@ -25,6 +24,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	public ApiErrorResponse handleGenericException(Exception ex) {
 		return ApiErrorResponse
-				.error(unexpectedErrorText + ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
+				.error("An unexpected error occurred: " + ex.getMessage(),
+						HttpStatus.INTERNAL_SERVER_ERROR.value());
 	}
 }

@@ -51,7 +51,7 @@ public class PostController {
 	@PutMapping(path = "/{id}")
 	public SinglePostResponse update(@PathVariable("id") long id, @RequestBody PostUpdateDTO postDTO) {
 		//ToDo нельзя менять UID записи
-		return service.update(id, postDTO);
+		return service.update(postDTO);
 	}
 
 	@DeleteMapping(path = "/{id}")

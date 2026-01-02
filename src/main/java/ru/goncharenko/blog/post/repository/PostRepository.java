@@ -11,7 +11,7 @@ import ru.goncharenko.blog.repository.UpdateRepository;
 public interface PostRepository extends
 		ReadRepository<Post, Long>,
 		CreateRepository<Post, PostCreateDTO>,
-		UpdateRepository<Post, Long, PostUpdateDTO>,
+		UpdateRepository<Post, PostUpdateDTO>,
 		DeleteRepository<Long> {
 	long incrementLikes(long id);
 }

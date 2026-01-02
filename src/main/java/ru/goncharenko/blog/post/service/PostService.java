@@ -42,9 +42,9 @@ public class PostService {
 		return mapper.postToSingleResponse(post);
 	}
 
-	public SinglePostResponse update(long id, PostUpdateDTO postDTO) {
-		Post post = repository.update(id, postDTO)
-				.orElseThrow(() -> new ResourceNotFoundException("Post with id: " + id + " not found."));
+	public SinglePostResponse update(PostUpdateDTO postDTO) {
+		Post post = repository.update(postDTO)
+				.orElseThrow(() -> new ResourceNotFoundException("Post with id: " + postDTO.getId() + " not found."));
 		return mapper.postToSingleResponse(post);
 	}
 
