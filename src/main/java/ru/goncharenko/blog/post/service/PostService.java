@@ -1,6 +1,7 @@
 package ru.goncharenko.blog.post.service;
 
 import org.springframework.stereotype.Service;
+import ru.goncharenko.blog.post.dto.LikeCountDTO;
 import ru.goncharenko.blog.post.dto.PostListResponse;
 import ru.goncharenko.blog.exception.ResourceNotFoundException;
 import ru.goncharenko.blog.post.dto.PostCreateDTO;
@@ -22,7 +23,7 @@ public class PostService {
 		this.mapper = mapper;
 	}
 
-	public PostListResponse getPosts(String search, int pageSize, int pageNumber) {
+	public PostListResponse<List<Post>> getPosts(String search, int pageSize, int pageNumber) {
 		List<Post> posts = repository.getPosts(search, pageSize, (pageNumber - 1) * pageSize);
 		return mapper.toListResponse(posts, true,true,3);
 		//ToDo добавить вывод количества страниц наличия следующей и предыдущей страниц
@@ -45,5 +46,13 @@ public class PostService {
 		Post post = repository.update(id, postDTO)
 				.orElseThrow(() -> new ResourceNotFoundException("Post with id: " + id + " not found."));
 		return mapper.postToSingleResponse(post);
+	}
+
+	public void delete(long id) {
+		repository.delete(id);
+	}
+
+	public LikeCountDTO incrementLikes(long id) {
+		return mapper.mapLikesCount(repository.incrementLikes(id));
 	}
 }

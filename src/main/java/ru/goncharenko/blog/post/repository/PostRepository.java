@@ -1,5 +1,6 @@
 package ru.goncharenko.blog.post.repository;
 
+import ru.goncharenko.blog.post.dto.LikeCountDTO;
 import ru.goncharenko.blog.post.dto.PostCreateDTO;
 import ru.goncharenko.blog.post.dto.PostUpdateDTO;
 import ru.goncharenko.blog.post.model.Post;
@@ -15,4 +16,8 @@ public interface PostRepository {
 	Optional<Post> newPost(PostCreateDTO postDTO);
 
 	Optional<Post> update(long id, PostUpdateDTO postDTO);
+
+	void delete(long id);
+
+	long incrementLikes(long id);
 }

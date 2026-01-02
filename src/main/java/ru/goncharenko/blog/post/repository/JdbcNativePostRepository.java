@@ -9,7 +9,6 @@ import org.springframework.stereotype.Repository;
 import ru.goncharenko.blog.post.dto.PostCreateDTO;
 import ru.goncharenko.blog.post.dto.PostUpdateDTO;
 import ru.goncharenko.blog.post.model.Post;
-import ru.goncharenko.blog.utils.TextUtil;
 
 import java.sql.PreparedStatement;
 import java.util.List;
@@ -32,7 +31,7 @@ public class JdbcNativePostRepository implements PostRepository {
 	@Override
 	public List<Post> getPosts(String search, int limit, int offset) {
 		return jdbcTemplate.query(
-				"select id, title, text, likesCount, commentsCount from posts limit " + limit + " offset " + offset,
+				"select id, title, text, likescount, commentscount from posts limit " + limit + " offset " + offset,
 				map(true)
 		);
 	}
@@ -40,7 +39,7 @@ public class JdbcNativePostRepository implements PostRepository {
 	@Override
 	public Optional<Post> findPostById(long id) {
 		return Optional.ofNullable(DataAccessUtils.singleResult(jdbcTemplate.query(
-				"select id, title, text, likesCount, commentsCount from posts where id = " + id,
+				"select id, title, text, likescount, commentscount from posts where id = " + id,
 				map(false)
 		)));
 	}
@@ -49,13 +48,13 @@ public class JdbcNativePostRepository implements PostRepository {
 		return (rs, rowNum) -> new Post(
 				rs.getLong("id"),
 				rs.getString("title"),
-				TextUtil.getSubstringText(substring, rs.getString("text")),
+				rs.getString("text"),
 				jdbcTemplate.query(
 						"select tagname from tags where postid = " + rs.getLong("id"),
 						(resultSet, rowNumber) -> resultSet.getString("tagName")
 				),
-				rs.getLong("likesCount"),
-				rs.getInt("commentsCount")
+				rs.getLong("likescount"),
+				rs.getInt("commentscount")
 		);
 	}
 
@@ -64,7 +63,7 @@ public class JdbcNativePostRepository implements PostRepository {
 		// Используем keyHolder для получения уникального идентификаотра записи
 		KeyHolder keyHolder = new GeneratedKeyHolder();
 		// Формируем insert-запрос для создания поста
-		String sql = "insert into posts(title, text, likesCount, commentsCount) values(?, ?, ?, ?)";
+		String sql = "insert into posts(title, text, likescount, commentscount) values(?, ?, ?, ?)";
 		jdbcTemplate.update(
 				connection -> {
 					PreparedStatement ps = connection.prepareStatement(sql, new String[]{"id"});
@@ -89,6 +88,7 @@ public class JdbcNativePostRepository implements PostRepository {
 				postDTO.getTitle(),
 				postDTO.getText(),
 				id);
+		// ToDo Нужно обновлять теги, а не только добавлять
 		creatTags(postDTO.getTags(), id);
 
 		return findPostById(id);
@@ -101,5 +101,23 @@ public class JdbcNativePostRepository implements PostRepository {
 					recordUID,
 					tag);
 		});
+	}
+
+	@Override
+	public void delete(long id) {
+		jdbcTemplate.update("delete from posts where id = ?", id);
+	}
+
+	@Override
+	public long incrementLikes(long id) {
+		KeyHolder keyHolder = new GeneratedKeyHolder();
+		String sql = "update posts set likescount = likescount + 1 where id = ?";
+		jdbcTemplate.update(
+				connection -> {
+					PreparedStatement ps = connection.prepareStatement(sql, new String[]{"likescount"});
+					ps.setLong(1, id);
+					return ps;
+				}, keyHolder);
+		return keyHolder.getKey().longValue();
 	}
 }
