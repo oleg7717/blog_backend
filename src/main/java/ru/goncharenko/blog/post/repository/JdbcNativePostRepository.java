@@ -32,7 +32,7 @@ public class JdbcNativePostRepository implements PostRepository {
 	public List<Post> getPosts(String search, int limit, int offset) {
 		return jdbcTemplate.query(
 				"select id, title, text, likescount, commentscount from posts limit " + limit + " offset " + offset,
-				map(true)
+				map()
 		);
 	}
 
@@ -40,11 +40,11 @@ public class JdbcNativePostRepository implements PostRepository {
 	public Optional<Post> findPostById(long id) {
 		return Optional.ofNullable(DataAccessUtils.singleResult(jdbcTemplate.query(
 				"select id, title, text, likescount, commentscount from posts where id = " + id,
-				map(false)
+				map()
 		)));
 	}
 
-	private RowMapper<Post> map(boolean substring) {
+	private RowMapper<Post> map() {
 		return (rs, rowNum) -> new Post(
 				rs.getLong("id"),
 				rs.getString("title"),
@@ -118,6 +118,9 @@ public class JdbcNativePostRepository implements PostRepository {
 					ps.setLong(1, id);
 					return ps;
 				}, keyHolder);
-		return keyHolder.getKey().longValue();
+
+		return Optional.ofNullable(keyHolder.getKey())
+				.map(Number::longValue)
+				.orElseThrow(() -> new RuntimeException("Likes count incorrect."));
 	}
 }
