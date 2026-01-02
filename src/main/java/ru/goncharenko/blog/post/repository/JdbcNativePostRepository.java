@@ -29,7 +29,7 @@ public class JdbcNativePostRepository implements PostRepository {
 	}
 
 	@Override
-	public List<Post> getPosts(String search, int limit, int offset) {
+	public List<Post> getRecords(String search, int limit, int offset) {
 		return jdbcTemplate.query(
 				"select id, title, text, likescount, commentscount from posts limit " + limit + " offset " + offset,
 				map()
@@ -37,7 +37,7 @@ public class JdbcNativePostRepository implements PostRepository {
 	}
 
 	@Override
-	public Optional<Post> findPostById(long id) {
+	public Optional<Post> findById(Long id) {
 		return Optional.ofNullable(DataAccessUtils.singleResult(jdbcTemplate.query(
 				"select id, title, text, likescount, commentscount from posts where id = " + id,
 				map()
@@ -59,7 +59,7 @@ public class JdbcNativePostRepository implements PostRepository {
 	}
 
 	@Override
-	public Optional<Post> newPost(PostCreateDTO postDTO) {
+	public Optional<Post> create(PostCreateDTO postDTO) {
 		// Используем keyHolder для получения уникального идентификаотра записи
 		KeyHolder keyHolder = new GeneratedKeyHolder();
 		// Формируем insert-запрос для создания поста
@@ -79,11 +79,11 @@ public class JdbcNativePostRepository implements PostRepository {
 		long recordUID = Objects.requireNonNull(keyHolder.getKey()).longValue();
 		creatTags(postDTO.getTags(), recordUID);
 
-		return findPostById(recordUID);
+		return findById(recordUID);
 	}
 
 	@Override
-	public Optional<Post> update(long id, PostUpdateDTO postDTO) {
+	public Optional<Post> update(Long id, PostUpdateDTO postDTO) {
 		jdbcTemplate.update("update posts set title = ?, text = ? where id = ?",
 				postDTO.getTitle(),
 				postDTO.getText(),
@@ -91,7 +91,7 @@ public class JdbcNativePostRepository implements PostRepository {
 		// ToDo Нужно обновлять теги, а не только добавлять
 		creatTags(postDTO.getTags(), id);
 
-		return findPostById(id);
+		return findById(id);
 	}
 
 	private void creatTags(List<String> tags, long recordUID) {
@@ -104,7 +104,7 @@ public class JdbcNativePostRepository implements PostRepository {
 	}
 
 	@Override
-	public void delete(long id) {
+	public void delete(Long id) {
 		jdbcTemplate.update("delete from posts where id = ?", id);
 	}
 

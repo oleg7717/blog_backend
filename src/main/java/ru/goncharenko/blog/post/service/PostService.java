@@ -24,20 +24,20 @@ public class PostService {
 	}
 
 	public PostListResponse<List<Post>> getPosts(String search, int pageSize, int pageNumber) {
-		List<Post> posts = repository.getPosts(search, pageSize, (pageNumber - 1) * pageSize);
+		List<Post> posts = repository.getRecords(search, pageSize, (pageNumber - 1) * pageSize);
 		return mapper.toListResponse(posts, true,true,3);
 		//ToDo добавить вывод количества страниц наличия следующей и предыдущей страниц
 	}
 
 	public SinglePostResponse getPostById(long id) {
-		Post post = repository.findPostById(id)
+		Post post = repository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Post with id: " + id + " not found."));
 		return mapper.postToSingleResponse(post);
 	}
 
 	public SinglePostResponse newPost(PostCreateDTO postDTO) {
 		// ToDo получать запись в сервисе после создания при помощи keyHolder или иначе
-		Post post = repository.newPost(postDTO)
+		Post post = repository.create(postDTO)
 				.orElseThrow(() -> new ResourceNotFoundException("Post not found."));
 		return mapper.postToSingleResponse(post);
 	}

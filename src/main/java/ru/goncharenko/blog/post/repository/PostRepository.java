@@ -3,20 +3,15 @@ package ru.goncharenko.blog.post.repository;
 import ru.goncharenko.blog.post.dto.PostCreateDTO;
 import ru.goncharenko.blog.post.dto.PostUpdateDTO;
 import ru.goncharenko.blog.post.model.Post;
+import ru.goncharenko.blog.repository.CreateRepository;
+import ru.goncharenko.blog.repository.DeleteRepository;
+import ru.goncharenko.blog.repository.ReadRepository;
+import ru.goncharenko.blog.repository.UpdateRepository;
 
-import java.util.List;
-import java.util.Optional;
-
-public interface PostRepository {
-	List<Post> getPosts(String search, int limit, int offset);
-
-	Optional<Post> findPostById(long id);
-
-	Optional<Post> newPost(PostCreateDTO postDTO);
-
-	Optional<Post> update(long id, PostUpdateDTO postDTO);
-
-	void delete(long id);
-
+public interface PostRepository extends
+		ReadRepository<Post, Long>,
+		CreateRepository<Post, PostCreateDTO>,
+		UpdateRepository<Post, Long, PostUpdateDTO>,
+		DeleteRepository<Long> {
 	long incrementLikes(long id);
 }
