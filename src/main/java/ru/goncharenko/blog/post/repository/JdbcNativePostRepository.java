@@ -59,8 +59,8 @@ public class JdbcNativePostRepository implements PostRepository {
 	}
 
 	@Override
-	public Optional<Post> create(PostCreateDTO postDTO) {
-		// Используем keyHolder для получения уникального идентификаотра записи
+	public Long create(PostCreateDTO postDTO) {
+		// Используем keyHolder для получения уникального идентификаотра записи с помощью returning в sql-запросе
 		KeyHolder keyHolder = new GeneratedKeyHolder();
 		// Формируем insert-запрос для создания поста
 		String sql = "insert into posts(title, text, likescount, commentscount) values(?, ?, ?, ?)";
@@ -73,13 +73,14 @@ public class JdbcNativePostRepository implements PostRepository {
 					ps.setInt(4, 0);
 					return ps;
 				},
-				keyHolder);
+				keyHolder
+		);
 
 		// Формируем insert-запросы для создания тегов
-		long recordUID = Objects.requireNonNull(keyHolder.getKey()).longValue();
-		creatTags(postDTO.getTags(), recordUID);
+		long postUID = Objects.requireNonNull(keyHolder.getKey()).longValue();
+		creatTags(postDTO.getTags(), postUID);
 
-		return findById(recordUID);
+		return postUID;
 	}
 
 	@Override
@@ -89,28 +90,39 @@ public class JdbcNativePostRepository implements PostRepository {
 				postDTO.getText(),
 				postDTO.getId()
 		);
-		// ToDo Нужно обновлять теги, а не только добавлять
+		//ToDo Нужно обновлять теги, а не только добавлять
 		creatTags(postDTO.getTags(), postDTO.getId());
 
 		return findById(postDTO.getId());
 	}
 
-	private void creatTags(List<String> tags, long recordUID) {
+	private void creatTags(List<String> tags, Long postId) {
+		String[] queries = {
+				"INSERT INTO users (name, email) VALUES ('John', 'john@email.com')",
+				"UPDATE users SET status = 'active' WHERE email = 'john@email.com'",
+				"DELETE FROM temp_logs WHERE created_date < NOW() - INTERVAL '7 days'"
+		};
+		jdbcTemplate.batchUpdate();
 		tags.forEach(tag -> {
 			jdbcTemplate.update("insert into tags(postid, tagName) values(?, ?) " +
 							"on conflict (postid, tagName) do nothing",
-					recordUID,
+					postId,
 					tag);
 		});
 	}
 
+	/**
+	 * Метод удаляет пост из базы данных по уникальному идентификатору. Записи из таблиц хранящих теги и комментарии
+	 * будут удалены автоматически, так как DDL схемы таблиц содержат опцию on delete cascade по ключу postId
+	 * @param id Уникальный идентификтор поста
+	 */
 	@Override
 	public void delete(Long id) {
 		jdbcTemplate.update("delete from posts where id = ?", id);
 	}
 
 	@Override
-	public long incrementLikes(long id) {
+	public long incrementLikes(Long id) {
 		KeyHolder keyHolder = new GeneratedKeyHolder();
 		String sql = "update posts set likescount = likescount + 1 where id = ?";
 		jdbcTemplate.update(
@@ -123,6 +135,6 @@ public class JdbcNativePostRepository implements PostRepository {
 
 		return Optional.ofNullable(keyHolder.getKey())
 				.map(Number::longValue)
-				.orElseThrow(() -> new RuntimeException("Likes count incorrect."));
+				.orElseThrow(() -> new RuntimeException("Likes count increment incorrect."));
 	}
 }

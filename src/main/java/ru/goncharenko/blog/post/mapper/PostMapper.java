@@ -8,6 +8,7 @@ import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
 import ru.goncharenko.blog.post.dto.LikeCountDTO;
+import ru.goncharenko.blog.post.dto.PostCreateDTO;
 import ru.goncharenko.blog.post.dto.PostListResponse;
 import ru.goncharenko.blog.post.dto.SinglePostResponse;
 import ru.goncharenko.blog.post.model.Post;
@@ -22,6 +23,8 @@ import java.util.List;
 )
 public interface PostMapper {
 	SinglePostResponse postToSingleResponse(Post post);
+
+	SinglePostResponse postToSingleResponse(PostCreateDTO postDTO);
 
 	// Маппинг для списка постов со статусом
 	@Mapping(target = "posts", source = "posts")

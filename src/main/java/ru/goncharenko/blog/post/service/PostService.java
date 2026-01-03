@@ -36,10 +36,10 @@ public class PostService {
 	}
 
 	public SinglePostResponse newPost(PostCreateDTO postDTO) {
-		// ToDo получать запись в сервисе после создания при помощи keyHolder или иначе
-		Post post = repository.create(postDTO)
-				.orElseThrow(() -> new ResourceNotFoundException("Post not found."));
-		return mapper.postToSingleResponse(post);
+		Long uid = repository.create(postDTO);
+		SinglePostResponse post = mapper.postToSingleResponse(postDTO);
+		post.setId(uid);
+		return post;
 	}
 
 	public SinglePostResponse update(PostUpdateDTO postDTO) {

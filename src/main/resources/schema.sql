@@ -14,7 +14,31 @@ create table if not exists tags(
 
 create index if not exists idx_tags_postid on tags (postid);
 
+create table if not exists comments(
+    id bigserial primary key,
+    text varchar(256) not null,
+    postid bigserial not null references posts(id) on delete cascade
+);
+
+-- Create rule for INSERT
+create or replace rule comment_insert_rule as
+    on insert to comments
+    do also
+update posts
+set commentsCount = commentsCount + 1
+WHERE id = NEW.postid;
+
+-- Create rule for DELETE
+create or replace rule comment_delete_rule as
+    on delete to comments
+    do also
+update posts
+set commentsCount = commentsCount - 1
+WHERE id = OLD.postid;
+
+
 truncate posts restart identity cascade;
+
 insert into posts(title, text, likesCount, commentsCount)
   values ('Пост про спорт', 'Нет ничего проще, ' ||
 'чем составить символическую сборную лучших баскетболистов XXI века в рамках подведения итогов первых 25 лет. ' ||
@@ -34,3 +58,7 @@ insert into tags(postid, tagname) values (2, 'finance');
 insert into tags(postid, tagname) values (2, 'politic');
 insert into tags(postid, tagname) values (3, 'sport');
 insert into tags(postid, tagname) values (3, 'politic');
+
+insert into comments(postid, text) values (1, 'Комментарий к посту 1');
+insert into comments(postid, text) values (3, 'Первый комментарий к посту 3');
+insert into comments(postid, text) values (3, 'Второй комментарий к посту 3');

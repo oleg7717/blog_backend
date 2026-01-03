@@ -1,6 +1,5 @@
 package ru.goncharenko.blog.post.controller;
 
-
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import ru.goncharenko.blog.exception.ValidationException;
 import ru.goncharenko.blog.post.dto.LikeCountDTO;
 import ru.goncharenko.blog.post.dto.PostListResponse;
 import ru.goncharenko.blog.post.dto.SinglePostResponse;
@@ -45,12 +45,17 @@ public class PostController {
 
 	@PostMapping()
 	public SinglePostResponse newPost(@RequestBody PostCreateDTO postDTO) {
+		//ToDo проверка полей dto
 		return service.newPost(postDTO);
 	}
 
 	@PutMapping(path = "/{id}")
 	public SinglePostResponse update(@PathVariable("id") long id, @RequestBody PostUpdateDTO postDTO) {
-		//ToDo нельзя менять UID записи
+		//ToDo проверка полей dto
+		if (id != postDTO.getId()) {
+			throw new ValidationException("The post ID in the URL must match the post ID in the request body.");
+		}
+
 		return service.update(postDTO);
 	}
 
@@ -64,4 +69,6 @@ public class PostController {
 	public LikeCountDTO incrementLikes(@PathVariable("id") long id) {
 		return service.incrementLikes(id);
 	}
+
+	//ToDo загрузка вложений
 }
