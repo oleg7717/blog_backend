@@ -83,6 +83,12 @@ public class JdbcNativePostRepository implements PostRepository {
 		return postUID;
 	}
 
+	/**
+	 * Метод обновляет пост по уникальному идентификатору из переданного представления. Записи тегов при обновлении
+	 * пересоздаются (происходит удаление существующих тегов по идентификатору поста и повторное создание)
+	 * @param postDTO переданное представление, содержащее поля для обновления поста и тегов
+	 * @return обновленная запись поста
+	 */
 	@Override
 	public Optional<Post> update(PostUpdateDTO postDTO) {
 		jdbcTemplate.update("update posts set title = ?, text = ? where id = ?",
@@ -90,25 +96,23 @@ public class JdbcNativePostRepository implements PostRepository {
 				postDTO.getText(),
 				postDTO.getId()
 		);
-		//ToDo Нужно обновлять теги, а не только добавлять
 		creatTags(postDTO.getTags(), postDTO.getId());
 
 		return findById(postDTO.getId());
 	}
 
 	private void creatTags(List<String> tags, Long postId) {
-		String[] queries = {
-				"INSERT INTO users (name, email) VALUES ('John', 'john@email.com')",
-				"UPDATE users SET status = 'active' WHERE email = 'john@email.com'",
-				"DELETE FROM temp_logs WHERE created_date < NOW() - INTERVAL '7 days'"
-		};
-		jdbcTemplate.batchUpdate();
-		tags.forEach(tag -> {
-			jdbcTemplate.update("insert into tags(postid, tagName) values(?, ?) " +
-							"on conflict (postid, tagName) do nothing",
-					postId,
-					tag);
-		});
+		jdbcTemplate.update("delete from tags where postid = ?", postId);
+		jdbcTemplate.batchUpdate(
+				"insert into tags(postid, tagname) values(?, ?) " +
+						"on conflict (postid, tagName) do nothing",
+				tags,
+				tags.size(),
+				(ps, tag) -> {
+					ps.setLong(1, postId);
+					ps.setString(2, tag);
+				}
+		);
 	}
 
 	/**
