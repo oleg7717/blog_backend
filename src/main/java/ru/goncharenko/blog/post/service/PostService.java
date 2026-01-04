@@ -25,8 +25,13 @@ public class PostService {
 
 	public PostListResponse<List<Post>> getPosts(String search, int pageSize, int pageNumber) {
 		List<Post> posts = repository.getRecords(search, pageSize, (pageNumber - 1) * pageSize);
-		return mapper.toListResponse(posts, true,true,3);
-		//ToDo добавить вывод количества страниц наличия следующей и предыдущей страниц
+
+		int pages = (int) Math.ceilDiv(repository.recordsCount(), pageSize);
+		boolean hasPrev = pages > 1 && pageNumber > 1;
+		boolean hasNext = pages > 1 && pageNumber < pages;
+
+		return mapper.toListResponse(posts, hasPrev,hasNext, pages);
+		//ToDo добавить поиск согласно правилам поиска
 	}
 
 	public SinglePostResponse getPostById(long id) {

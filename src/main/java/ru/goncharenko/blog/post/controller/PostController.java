@@ -1,5 +1,6 @@
 package ru.goncharenko.blog.post.controller;
 
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import ru.goncharenko.blog.exception.ValidationException;
 import ru.goncharenko.blog.post.dto.LikeCountDTO;
 import ru.goncharenko.blog.post.dto.PostListResponse;
@@ -18,23 +20,30 @@ import ru.goncharenko.blog.post.dto.SinglePostResponse;
 import ru.goncharenko.blog.post.dto.PostCreateDTO;
 import ru.goncharenko.blog.post.dto.PostUpdateDTO;
 import ru.goncharenko.blog.post.model.Post;
+import ru.goncharenko.blog.post.service.FilesService;
 import ru.goncharenko.blog.post.service.PostService;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/posts")
+@RequestMapping(path = "/posts")
 public class PostController {
 	private final PostService service;
+	private final FilesService filesService;
 
-	public PostController(PostService service) {
+	public PostController(PostService service, FilesService filesService) {
 		this.service = service;
+		this.filesService = filesService;
 	}
 
 	@GetMapping
 	public PostListResponse<List<Post>> index(@RequestParam(required = false, name = "search") String search,
 	                                          @RequestParam(name = "pageSize") int pageSize,
 	                                          @RequestParam(name = "pageNumber") int pageNumber) {
+		if (pageNumber < 1) {
+			throw new ValidationException("Page number can not be less then one.");
+		}
+
 		return service.getPosts(search, pageSize, pageNumber);
 	}
 
@@ -62,6 +71,7 @@ public class PostController {
 	@DeleteMapping(path = "/{id}")
 	@ResponseStatus(HttpStatus.OK)
 	public void delete(@PathVariable("id") long id) {
+		// ToDo удалять картинку при удалении поста
 		service.delete(id);
 	}
 
@@ -70,5 +80,13 @@ public class PostController {
 		return service.incrementLikes(id);
 	}
 
-	//ToDo загрузка вложений
+	@PutMapping(path = "/{id}/image")
+	public void uploadImage(@PathVariable("id") long id, @RequestParam("image") MultipartFile file) {
+		filesService.upload(id, file);
+	}
+
+	@GetMapping(path = "/{id}/image")
+	public Resource downloadImage(@PathVariable("id") long id) {
+		return filesService.download(id);
+	}
 }

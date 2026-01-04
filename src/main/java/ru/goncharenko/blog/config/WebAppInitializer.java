@@ -23,7 +23,7 @@ public class WebAppInitializer extends AbstractAnnotationConfigDispatcherServlet
 		long maxFileSize = 5 * 1024 * 1024; // 5 MB
 		long maxRequestSize = 20 * 1024 * 1024; // 25 MB
 		int fileSizeThreshold = 1024 * 1024; // 1 MB
-		String location = "/tmp"; // Directory for temporary storage (must be an absolute path)
+		String location = ""; // Use system default
 
 		MultipartConfigElement multipartConfigElement = new MultipartConfigElement(
 				location,

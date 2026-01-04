@@ -23,11 +23,6 @@ public class JdbcNativeCommentRepository implements CommentRepository {
 		this.jdbcTemplate = jdbcTemplate;
 	}
 
-	public long recordsCount() {
-		Long count = jdbcTemplate.queryForObject("select count(1) from comments", Long.class);
-		return count != null ? count : 0;
-	}
-
 	public List<Comment> findByPostId(Long postId) {
 		return jdbcTemplate.query(
 				"select id, text, postid from comments where postid = " + postId,

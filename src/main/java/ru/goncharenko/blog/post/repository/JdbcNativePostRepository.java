@@ -23,7 +23,7 @@ public class JdbcNativePostRepository implements PostRepository {
 		this.jdbcTemplate = jdbcTemplate;
 	}
 
-	public long recordsCount() {
+	public Long recordsCount() {
 		Long count = jdbcTemplate.queryForObject("select count(id) from posts", Long.class);
 		return count != null ? count : 0;
 	}
