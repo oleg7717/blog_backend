@@ -2,6 +2,7 @@ package ru.goncharenko.blog.post.controller;
 
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,12 +24,13 @@ import ru.goncharenko.blog.post.dto.PostUpdateDTO;
 import ru.goncharenko.blog.post.model.Post;
 import ru.goncharenko.blog.post.service.FilesService;
 import ru.goncharenko.blog.post.service.PostService;
+import ru.goncharenko.blog.response.ApiMessageResponse;
 import ru.goncharenko.blog.utils.ValidationUtils;
 
 import java.util.List;
 
 @RestController
-@RequestMapping(path = "/posts")
+@RequestMapping(path = "/api/posts")
 public class PostController {
 	private final PostService service;
 	private final FilesService filesService;
@@ -57,6 +59,7 @@ public class PostController {
 	}
 
 	@PostMapping()
+	@ResponseStatus(HttpStatus.CREATED)
 	public SinglePostResponse newPost(@RequestBody PostCreateDTO postDTO/*, BindingResult bindingResult*/) {
 		validationUtils.validateDTO(postDTO);
 
@@ -85,13 +88,23 @@ public class PostController {
 		return service.incrementLikes(id);
 	}
 
-	@PutMapping(path = "/{id}/image")
-	public void uploadImage(@PathVariable("id") long id, @RequestParam("image") MultipartFile file) {
+	@PutMapping(path = "/{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	@ResponseStatus(HttpStatus.OK)
+	public ApiMessageResponse uploadImage(@PathVariable("id") long id, @RequestParam("image") MultipartFile file) {
+		// Ищем пост по идентификатору, если поста не существует, то будет возвращен json с ошибкой
+		service.getPostById(id);
+		if (file.isEmpty()) {
+			throw new ValidationException("Uploaded file is empty");
+		}
 		filesService.upload(id, file);
+
+		return ApiMessageResponse.success("File upload successfully");
 	}
 
-	@GetMapping(path = "/{id}/image")
+	@GetMapping(path = "/{id}/image", produces = MediaType.IMAGE_JPEG_VALUE)
 	public Resource downloadImage(@PathVariable("id") long id) {
+		// Ищем пост по идентификатору, если поста не существует, то будет возвращен json с ошибкой
+		service.getPostById(id);
 		return filesService.download(id);
 	}
 }

@@ -4,6 +4,7 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
+import ru.goncharenko.blog.exception.ResourceNotFoundException;
 import ru.goncharenko.blog.utils.FileUtils;
 
 import java.io.File;
@@ -37,7 +38,7 @@ public class FilesService {
 			Path uploadDir = Paths.get(UPLOAD_DIR + postId);
 			return FileUtils.findFile(uploadDir, postId);
 		} catch (IOException e) {
-			throw new RuntimeException(e.getMessage(), e);
+			throw new ResourceNotFoundException("Image file for post not fount");
 		}
 	}
 }

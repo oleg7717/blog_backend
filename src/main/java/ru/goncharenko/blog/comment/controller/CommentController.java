@@ -22,7 +22,7 @@ import ru.goncharenko.blog.utils.ValidationUtils;
 import java.util.List;
 
 @RestController
-@RequestMapping("/posts/{postid}/comments")
+@RequestMapping("/api/posts/{postid}/comments")
 public class CommentController {
 	private final CommentService service;
 	private final ValidationUtils<BaseDTO> validationUtils;
@@ -43,6 +43,7 @@ public class CommentController {
 	}
 
 	@PostMapping()
+	@ResponseStatus(HttpStatus.CREATED)
 	public SingleCommentResponse newComment(@PathVariable("postid") Long postId,
 	                                        @RequestBody CommentCreateDTO commentDTO) {
 		validationUtils.validateDTO(commentDTO);

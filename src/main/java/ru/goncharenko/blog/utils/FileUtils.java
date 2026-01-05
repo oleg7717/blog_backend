@@ -3,6 +3,7 @@ package ru.goncharenko.blog.utils;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
+import ru.goncharenko.blog.exception.ResourceNotFoundException;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -40,7 +41,7 @@ public class FileUtils {
 				return new ByteArrayResource(Files.readAllBytes(foundFile.get()));
 			}
 
-			return null;
+			throw new ResourceNotFoundException("Image file for post not fount");
 		}
 	}
 }
