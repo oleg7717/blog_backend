@@ -56,6 +56,9 @@ dependencies {
     implementation("org.mapstruct:mapstruct:$mapstructVersion")
     annotationProcessor("org.mapstruct:mapstruct-processor:$mapstructVersion")
 
+    // Validation API
+    implementation("org.hibernate:hibernate-validator:8.0.1.Final")
+
     // Spring framework
     testImplementation("org.springframework:spring-test")
     testImplementation("org.junit.jupiter:junit-jupiter")

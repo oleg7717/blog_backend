@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import ru.goncharenko.blog.dto.BaseDTO;
 import ru.goncharenko.blog.exception.ValidationException;
 import ru.goncharenko.blog.post.dto.LikeCountDTO;
 import ru.goncharenko.blog.post.dto.PostListResponse;
@@ -22,6 +23,7 @@ import ru.goncharenko.blog.post.dto.PostUpdateDTO;
 import ru.goncharenko.blog.post.model.Post;
 import ru.goncharenko.blog.post.service.FilesService;
 import ru.goncharenko.blog.post.service.PostService;
+import ru.goncharenko.blog.utils.ValidationUtils;
 
 import java.util.List;
 
@@ -30,10 +32,12 @@ import java.util.List;
 public class PostController {
 	private final PostService service;
 	private final FilesService filesService;
+	private final ValidationUtils<BaseDTO> validationUtils;
 
-	public PostController(PostService service, FilesService filesService) {
+	public PostController(PostService service, FilesService filesService, ValidationUtils<BaseDTO> validationUtils) {
 		this.service = service;
 		this.filesService = filesService;
+		this.validationUtils = validationUtils;
 	}
 
 	@GetMapping
@@ -53,14 +57,15 @@ public class PostController {
 	}
 
 	@PostMapping()
-	public SinglePostResponse newPost(@RequestBody PostCreateDTO postDTO) {
-		//ToDo проверка полей dto
+	public SinglePostResponse newPost(@RequestBody PostCreateDTO postDTO/*, BindingResult bindingResult*/) {
+		validationUtils.validateDTO(postDTO);
+
 		return service.newPost(postDTO);
 	}
 
 	@PutMapping(path = "/{id}")
 	public SinglePostResponse update(@PathVariable("id") long id, @RequestBody PostUpdateDTO postDTO) {
-		//ToDo проверка полей dto
+		validationUtils.validateDTO(postDTO);
 		if (id != postDTO.getId()) {
 			throw new ValidationException("The post ID in the URL must match the post ID in the request body.");
 		}
