@@ -10,8 +10,10 @@ import ru.goncharenko.blog.post.dto.SinglePostResponse;
 import ru.goncharenko.blog.post.mapper.PostMapper;
 import ru.goncharenko.blog.post.model.Post;
 import ru.goncharenko.blog.post.repository.PostRepository;
+import ru.goncharenko.blog.utils.TextUtils;
 
 import java.util.List;
+import java.util.TreeMap;
 
 @Service
 public class PostService {
@@ -24,14 +26,29 @@ public class PostService {
 	}
 
 	public PostListResponse<List<Post>> getPosts(String search, int pageSize, int pageNumber) {
-		List<Post> posts = repository.getRecords(search, pageSize, (pageNumber - 1) * pageSize);
+		String searchString = TextUtils.getSearchString(search);
+		TreeMap<Integer, String> tags = TextUtils.getTags(search);
+		List<Post> posts;
+		int offset = (pageNumber - 1) * pageSize;
+		if (!searchString.isEmpty() && !tags.isEmpty()) {
+			posts = repository.searchByTagsAndSubstring(searchString,
+					tags.firstEntry().getKey(),
+					tags.firstEntry().getValue(),
+					pageSize,
+					offset);
+		} else if (!searchString.isEmpty()) {
+			posts = repository.searchBySubstring(searchString, pageSize, offset);
+		} else if (!tags.isEmpty()){
+			posts = repository.searchByTags(tags.firstEntry().getKey(), tags.firstEntry().getValue(), pageSize, offset);
+		} else {
+			posts = repository.getRecords(pageSize, offset);
+		}
 
 		int pages = (int) Math.ceilDiv(repository.recordsCount(), pageSize);
 		boolean hasPrev = pages > 1 && pageNumber > 1;
 		boolean hasNext = pages > 1 && pageNumber < pages;
 
 		return mapper.toListResponse(posts, hasPrev,hasNext, pages);
-		//ToDo добавить поиск согласно правилам поиска
 	}
 
 	public SinglePostResponse getPostById(long id) {

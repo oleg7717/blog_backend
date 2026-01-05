@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import ru.goncharenko.blog.post.dto.PostCreateDTO;
 import ru.goncharenko.blog.post.dto.PostUpdateDTO;
 import ru.goncharenko.blog.post.model.Post;
+import ru.goncharenko.blog.utils.TextUtils;
 
 import java.sql.PreparedStatement;
 import java.util.List;
@@ -29,9 +30,52 @@ public class JdbcNativePostRepository implements PostRepository {
 	}
 
 	@Override
-	public List<Post> getRecords(String search, int limit, int offset) {
+	public List<Post> getRecords(int limit, int offset) {
 		return jdbcTemplate.query(
-				"select id, title, text, likescount, commentscount from posts limit " + limit + " offset " + offset,
+				"select * from posts limit " + limit + " offset " + offset,
+				map()
+		);
+	}
+
+	@Override
+	public List<Post> searchByTagsAndSubstring(String search, int tagsCount, String tags, int limit, int offset) {
+		return jdbcTemplate.query(
+				"select p.* from posts p\n" +
+						"where p.id in (\n" +
+						"    select postid" +
+						"    from tags\n" +
+						"    where tagname in (" + tags + ")\n" +
+						"    group by postid\n" +
+						"    having count(distinct tagname) = " + tagsCount + "\n" +
+						")\n" +
+						"and p.title like '%" + search + "%'\n" +
+						"order by p.id limit " + limit + " offset " + offset,
+				map()
+		);
+	}
+
+	@Override
+	public List<Post> searchBySubstring(String search, int limit, int offset) {
+		return jdbcTemplate.query(
+				"select p.* from posts p\n" +
+						"where p.title like '%" + search + "%'\n" +
+						"order by p.id limit " + limit + " offset " + offset,
+				map()
+		);
+	}
+
+	@Override
+	public List<Post> searchByTags(int tagsCount, String tags, int limit, int offset) {
+		return jdbcTemplate.query(
+				"select p.* from posts p\n" +
+						"where p.id in (\n" +
+						"    select postid" +
+						"    from tags\n" +
+						"    where tagname in (" + tags + ")\n" +
+						"    group by postid\n" +
+						"    having count(distinct tagname) = " + tagsCount + "\n" +
+						")\n" +
+						"order by p.id limit " + limit + " offset " + offset,
 				map()
 		);
 	}
