@@ -1,0 +1,46 @@
+package ru.goncharenko.blog.utils;
+
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Optional;
+import java.util.stream.Stream;
+
+public class FileUtils {
+	public static String getExtension(MultipartFile file) {
+		String originalFilename = file.getOriginalFilename();
+		if (originalFilename == null || originalFilename.isEmpty()) {
+			return "";
+		}
+		int lastDotIndex = originalFilename.lastIndexOf('.');
+		if (lastDotIndex == -1) {
+			return "";
+		}
+		return originalFilename.substring(lastDotIndex + 1);
+	}
+
+	public static String getFileNameWithoutExtension(Path path) {
+		String fileName = path.getFileName().toString();
+		int dotIndex = fileName.lastIndexOf('.');
+		return (dotIndex == -1) ? fileName : fileName.substring(0, dotIndex);
+	}
+
+	public static Resource findFile(Path uploadDir, long postId) throws IOException {
+		try (Stream<Path> files = Files.walk(uploadDir)) {
+			Optional<Path> foundFile = files
+					.filter(Files::isRegularFile)
+					.filter(path -> FileUtils.getFileNameWithoutExtension(path)
+							.equalsIgnoreCase("post" + postId + "_image"))
+					.findFirst();
+			if (foundFile.isPresent()) {
+				return new ByteArrayResource(Files.readAllBytes(foundFile.get()));
+			}
+
+			return null;
+		}
+	}
+}
