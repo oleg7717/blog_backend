@@ -25,14 +25,14 @@ public class JdbcNativeCommentRepository implements CommentRepository {
 
 	public List<Comment> findByPostId(Long postId) {
 		return jdbcTemplate.query(
-				"select id, text, postid from comments where postid = " + postId,
+				"select * from comments where postid = " + postId,
 				map()
 		);
 	}
 
 	public Optional<Comment> findByIdAndPostId(Long id, Long postId) {
 		return Optional.ofNullable(DataAccessUtils.singleResult(jdbcTemplate.query(
-				"select id, text, postid from comments where id = " + id + " and postid = " + postId,
+				"select * from comments where id = " + id + " and postid = " + postId,
 				map()
 		)));
 	}

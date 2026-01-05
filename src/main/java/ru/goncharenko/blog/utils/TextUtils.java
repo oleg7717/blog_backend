@@ -25,7 +25,7 @@ public class TextUtils {
 			}
 		}
 
-		return searchSubstring.toString();
+		return searchSubstring.toString().trim();
 	}
 
 	public static TreeMap<Integer, String> getTags(String search) {

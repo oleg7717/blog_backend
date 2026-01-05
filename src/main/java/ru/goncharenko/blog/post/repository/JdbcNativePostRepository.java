@@ -9,7 +9,6 @@ import org.springframework.stereotype.Repository;
 import ru.goncharenko.blog.post.dto.PostCreateDTO;
 import ru.goncharenko.blog.post.dto.PostUpdateDTO;
 import ru.goncharenko.blog.post.model.Post;
-import ru.goncharenko.blog.utils.TextUtils;
 
 import java.sql.PreparedStatement;
 import java.util.List;
@@ -19,6 +18,18 @@ import java.util.Optional;
 @Repository
 public class JdbcNativePostRepository implements PostRepository {
 	private final JdbcTemplate jdbcTemplate;
+	private final String SELECT_FROM_POST = "select p.* from posts p ";
+	private final String SEARCH_BY_TAGS = """
+			p.id in (
+			    select postid
+			    from tags
+			    where tagname in (%s)
+			    group by postid
+			    having count(distinct tagname) = %d
+			)
+			""";
+	private final String SERCH_BY_STRING = "p.title like '%%%s%%' ";
+	private final String ORDER_BY = "order by p.id limit %d offset %d";
 
 	public JdbcNativePostRepository(JdbcTemplate jdbcTemplate) {
 		this.jdbcTemplate = jdbcTemplate;
@@ -32,7 +43,7 @@ public class JdbcNativePostRepository implements PostRepository {
 	@Override
 	public List<Post> getRecords(int limit, int offset) {
 		return jdbcTemplate.query(
-				"select * from posts limit " + limit + " offset " + offset,
+					SELECT_FROM_POST + ORDER_BY.formatted(limit, offset),
 				map()
 		);
 	}
@@ -40,16 +51,10 @@ public class JdbcNativePostRepository implements PostRepository {
 	@Override
 	public List<Post> searchByTagsAndSubstring(String search, int tagsCount, String tags, int limit, int offset) {
 		return jdbcTemplate.query(
-				"select p.* from posts p\n" +
-						"where p.id in (\n" +
-						"    select postid" +
-						"    from tags\n" +
-						"    where tagname in (" + tags + ")\n" +
-						"    group by postid\n" +
-						"    having count(distinct tagname) = " + tagsCount + "\n" +
-						")\n" +
-						"and p.title like '%" + search + "%'\n" +
-						"order by p.id limit " + limit + " offset " + offset,
+				SELECT_FROM_POST + "where " +
+						SEARCH_BY_TAGS.formatted(tags, tagsCount) + " and " +
+						SERCH_BY_STRING.formatted(search) +
+						ORDER_BY.formatted(limit, offset),
 				map()
 		);
 	}
@@ -57,9 +62,9 @@ public class JdbcNativePostRepository implements PostRepository {
 	@Override
 	public List<Post> searchBySubstring(String search, int limit, int offset) {
 		return jdbcTemplate.query(
-				"select p.* from posts p\n" +
-						"where p.title like '%" + search + "%'\n" +
-						"order by p.id limit " + limit + " offset " + offset,
+				SELECT_FROM_POST + "where " +
+						SERCH_BY_STRING.formatted(search) +
+						ORDER_BY.formatted(limit, offset),
 				map()
 		);
 	}
@@ -67,15 +72,9 @@ public class JdbcNativePostRepository implements PostRepository {
 	@Override
 	public List<Post> searchByTags(int tagsCount, String tags, int limit, int offset) {
 		return jdbcTemplate.query(
-				"select p.* from posts p\n" +
-						"where p.id in (\n" +
-						"    select postid" +
-						"    from tags\n" +
-						"    where tagname in (" + tags + ")\n" +
-						"    group by postid\n" +
-						"    having count(distinct tagname) = " + tagsCount + "\n" +
-						")\n" +
-						"order by p.id limit " + limit + " offset " + offset,
+				SELECT_FROM_POST + "where " +
+						SEARCH_BY_TAGS.formatted(tags, tagsCount) +
+						ORDER_BY.formatted(limit, offset),
 				map()
 		);
 	}
@@ -83,7 +82,7 @@ public class JdbcNativePostRepository implements PostRepository {
 	@Override
 	public Optional<Post> findById(Long id) {
 		return Optional.ofNullable(DataAccessUtils.singleResult(jdbcTemplate.query(
-				"select id, title, text, likescount, commentscount from posts where id = " + id,
+				"select * from posts where id = " + id,
 				map()
 		)));
 	}
