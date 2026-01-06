@@ -1,7 +1,9 @@
 package ru.goncharenko.blog.post.dto;
 
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import ru.goncharenko.blog.dto.BaseDTO;
 
@@ -9,6 +11,8 @@ import java.util.List;
 
 @Setter
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class PostUpdateDTO implements BaseDTO {
 	@NotNull(message = "Id cannot be null")
 	private long id;

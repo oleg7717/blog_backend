@@ -1,12 +1,16 @@
 package ru.goncharenko.blog.comment.dto;
 
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import ru.goncharenko.blog.dto.BaseDTO;
 
 @Setter
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class CommentUpdateDTO implements BaseDTO {
 	@NotNull(message = "Id cannot be null")
 	private long id;
