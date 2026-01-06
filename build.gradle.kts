@@ -59,9 +59,21 @@ dependencies {
     // Validation API
     implementation("org.hibernate:hibernate-validator:8.0.1.Final")
 
-    // Spring framework
+    // Spring test framework
     testImplementation("org.springframework:spring-test")
-    testImplementation("org.junit.jupiter:junit-jupiter")
+
+    // JUnit framework
+    testImplementation("org.junit.jupiter:junit-jupiter-api")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+
+    // Test DB
+    testImplementation("com.h2database:h2:2.3.232")
+
+    // Usefull tests libraries
+    testImplementation("jakarta.servlet:jakarta.servlet-api:6.1.0")
+    testImplementation("org.glassfish:jakarta.el:4.0.2")
+    testImplementation("org.hamcrest:hamcrest:2.2")
+    testImplementation("com.jayway.jsonpath:json-path:2.9.0")
 }
 
 tasks.war {
