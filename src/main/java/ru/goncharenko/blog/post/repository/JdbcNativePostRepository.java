@@ -147,8 +147,7 @@ public class JdbcNativePostRepository implements PostRepository {
 	private void creatTags(List<String> tags, Long postId) {
 		jdbcTemplate.update("delete from tags where postid = ?", postId);
 		jdbcTemplate.batchUpdate(
-				"insert into tags(postid, tagname) values(?, ?) " +
-						"on conflict (postid, tagName) do nothing",
+				"insert into tags(postid, tagname) values(?, ?) ",
 				tags,
 				tags.size(),
 				(ps, tag) -> {

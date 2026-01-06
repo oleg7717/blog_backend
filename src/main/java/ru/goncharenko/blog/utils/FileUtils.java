@@ -41,7 +41,7 @@ public class FileUtils {
 				return new ByteArrayResource(Files.readAllBytes(foundFile.get()));
 			}
 
-			throw new ResourceNotFoundException("Image file for post not fount");
+			throw new ResourceNotFoundException("Image file for post not found");
 		}
 	}
 }

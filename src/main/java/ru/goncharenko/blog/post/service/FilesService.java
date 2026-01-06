@@ -38,7 +38,7 @@ public class FilesService {
 			Path uploadDir = Paths.get(UPLOAD_DIR + postId);
 			return FileUtils.findFile(uploadDir, postId);
 		} catch (IOException e) {
-			throw new ResourceNotFoundException("Image file for post not fount");
+			throw new ResourceNotFoundException("Image file for post not found");
 		}
 	}
 }

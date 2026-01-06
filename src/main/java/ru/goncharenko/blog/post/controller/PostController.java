@@ -76,6 +76,12 @@ public class PostController {
 		return service.update(postDTO);
 	}
 
+	/**
+	 * Метод удаляет пост по уникальному идентификатору. Записи из таблиц хранящих теги и комментарии
+	 * будут удалены автоматически, так как DDL схемы таблиц содержат опцию on delete cascade по ключу postId
+	 * @param id Уникальный идентификтор поста
+	 */
+
 	@DeleteMapping(path = "/{id}")
 	@ResponseStatus(HttpStatus.OK)
 	public void delete(@PathVariable("id") long id) {
