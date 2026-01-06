@@ -91,17 +91,21 @@ public class JdbcNativeCommentRepository implements CommentRepository {
 	public void delete(Long id) {
 		KeyHolder keyHolder = new GeneratedKeyHolder();
 		String sql = "delete from comments where id = ? returning postid";
-		jdbcTemplate.update(
-				connection -> {
-					PreparedStatement ps = connection.prepareStatement(sql, new String[]{"postid"});
-					ps.setLong(1, id);
-					return ps;
-				},
-				keyHolder
-		);
+		try {
+			jdbcTemplate.update(
+					connection -> {
+						PreparedStatement ps = connection.prepareStatement(sql, new String[]{"postid"});
+						ps.setLong(1, id);
+						return ps;
+					},
+					keyHolder
+			);
 
-		jdbcTemplate.update("update posts set commentsCount = commentscount - 1 WHERE id = ?",
-				Objects.requireNonNull(keyHolder.getKey()).longValue()
-		);
+			jdbcTemplate.update("update posts set commentsCount = commentscount - 1 WHERE id = ?",
+					Objects.requireNonNull(keyHolder.getKey()).longValue()
+			);
+		} catch (Exception ex) {
+			throw new RuntimeException("Error deleting comment with id " + id);
+		}
 	}
 }
