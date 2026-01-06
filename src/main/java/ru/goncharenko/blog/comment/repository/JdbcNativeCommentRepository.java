@@ -46,8 +46,7 @@ public class JdbcNativeCommentRepository implements CommentRepository {
 	}
 
 	/**
-	 * Метод создает комментарий в базе данных по переданному представлению. При добавлении срабатывает правило базы
-	 * данных: comment_insert_rule, которое увеличивает счетчик количества комментариев в таблице posts
+	 * Метод создает комментарий в базе данных по переданному представлению
 	 * @param commentDTO представление комментария для создания
 	 * @return уникальный идентификатор комментария
 	 */
@@ -66,6 +65,9 @@ public class JdbcNativeCommentRepository implements CommentRepository {
 				},
 				keyHolder
 		);
+		jdbcTemplate.update("update posts set commentscount = commentscount + 1 WHERE id = ?",
+				commentDTO.getPostId()
+		);
 
 		return Objects.requireNonNull(keyHolder.getKey()).longValue();
 	}
@@ -82,12 +84,24 @@ public class JdbcNativeCommentRepository implements CommentRepository {
 	}
 
 	/**
-	 * Метод удаляет комментарий из базы данных по уникальному идентификатору. При удалении срабатывает правило базы
-	 * данных: comment_delete_rule, которое уменьшает счетчик количества комментариев в таблице posts
+	 * Метод удаляет комментарий из базы данных по уникальному идентификатору
 	 * @param id Уникальный идентификтор комментария
 	 */
 	@Override
 	public void delete(Long id) {
-		jdbcTemplate.update("delete from comments where id = ?", id);
+		KeyHolder keyHolder = new GeneratedKeyHolder();
+		String sql = "delete from comments where id = ? returning postid";
+		jdbcTemplate.update(
+				connection -> {
+					PreparedStatement ps = connection.prepareStatement(sql, new String[]{"postid"});
+					ps.setLong(1, id);
+					return ps;
+				},
+				keyHolder
+		);
+
+		jdbcTemplate.update("update posts set commentsCount = commentscount - 1 WHERE id = ?",
+				Objects.requireNonNull(keyHolder.getKey()).longValue()
+		);
 	}
 }
