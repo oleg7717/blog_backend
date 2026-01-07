@@ -76,10 +76,14 @@ public class JdbcNativeCommentRepository implements CommentRepository {
 
 	@Override
 	public Optional<Comment> update(CommentUpdateDTO commentDTO) {
-		jdbcTemplate.update("update comments set text = ? where id = ? and postid = ?",
-				commentDTO.getText(),
-				commentDTO.getId(),
-				commentDTO.getPostId()
+		jdbcTemplate.update(
+				connection -> {
+					PreparedStatement ps = connection.prepareStatement("update comments set text = ? where id = ? and postid = ?", new String[]{"id"});
+					ps.setString(1, commentDTO.getText());
+					ps.setLong(2, commentDTO.getId());
+					ps.setLong(3, commentDTO.getPostId());
+					return ps;
+				}
 		);
 
 		return findByIdAndPostId(commentDTO.getId(), commentDTO.getPostId());

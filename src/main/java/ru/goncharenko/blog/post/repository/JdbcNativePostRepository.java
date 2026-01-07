@@ -137,10 +137,15 @@ public class JdbcNativePostRepository implements PostRepository {
 	@Override
 	@Transactional
 	public Optional<Post> update(PostUpdateDTO postDTO) {
-		jdbcTemplate.update("update posts set title = ?, text = ? where id = ?",
-				postDTO.getTitle(),
-				postDTO.getText(),
-				postDTO.getId()
+		String updatePostSQL = "update posts set title = ?, text = ? where id = ?";
+		jdbcTemplate.update(
+				connection -> {
+					PreparedStatement ps = connection.prepareStatement(updatePostSQL, new String[]{"id"});
+					ps.setString(1, postDTO.getTitle());
+					ps.setString(2, postDTO.getText());
+					ps.setLong(3, postDTO.getId());
+					return ps;
+				}
 		);
 		creatTags(postDTO.getTags(), postDTO.getId());
 
@@ -150,7 +155,7 @@ public class JdbcNativePostRepository implements PostRepository {
 	private void creatTags(List<String> tags, Long postId) {
 		jdbcTemplate.update("delete from tags where postid = ?", postId);
 		jdbcTemplate.batchUpdate(
-				"insert into tags(postid, tagname) values(?, ?) ",
+				"insert into tags(postid, tagname) values(?, ?)",
 				tags,
 				tags.size(),
 				(ps, tag) -> {
