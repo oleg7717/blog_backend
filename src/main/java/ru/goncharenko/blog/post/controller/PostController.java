@@ -42,7 +42,7 @@ public class PostController {
 		this.validationUtils = validationUtils;
 	}
 
-	@GetMapping
+	@GetMapping(path = "")
 	public PostListResponse<List<Post>> index(@RequestParam(required = false, name = "search") String search,
 	                                          @RequestParam(name = "pageSize") int pageSize,
 	                                          @RequestParam(name = "pageNumber") int pageNumber) {
@@ -58,7 +58,7 @@ public class PostController {
 		return service.getPostById(id);
 	}
 
-	@PostMapping()
+	@PostMapping(path = "")
 	@ResponseStatus(HttpStatus.CREATED)
 	public SinglePostResponse newPost(@RequestBody PostCreateDTO postDTO/*, BindingResult bindingResult*/) {
 		validationUtils.validateDTO(postDTO);

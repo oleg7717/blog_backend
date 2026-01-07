@@ -19,6 +19,7 @@ import ru.goncharenko.blog.dto.BaseDTO;
 import ru.goncharenko.blog.exception.ValidationException;
 import ru.goncharenko.blog.utils.ValidationUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -32,9 +33,15 @@ public class CommentController {
 		this.validationUtils = validationUtils;
 	}
 
-	@GetMapping
-	public List<Comment> index(@PathVariable("postid") Long postId) {
-		return service.getCommentsByPostId(postId);
+	@GetMapping(path = "")
+	public List<Comment> index(@PathVariable("postid") String postId) {
+		// Входящий параметр может быть строкой (undefined)
+		try {
+			Long id = Long.parseLong(postId);
+			return service.getCommentsByPostId(id);
+		} catch (NumberFormatException ex) {
+			return new ArrayList<>();
+		}
 	}
 
 	@GetMapping(path = "/{id}")
@@ -42,7 +49,7 @@ public class CommentController {
 		return service.getComment(id, postId);
 	}
 
-	@PostMapping()
+	@PostMapping(path = "")
 	@ResponseStatus(HttpStatus.CREATED)
 	public SingleCommentResponse newComment(@PathVariable("postid") Long postId,
 	                                        @RequestBody CommentCreateDTO commentDTO) {
