@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import ru.goncharenko.blog.comment.dto.CommentCreateDTO;
 import ru.goncharenko.blog.comment.dto.CommentUpdateDTO;
 import ru.goncharenko.blog.comment.model.Comment;
@@ -51,6 +52,7 @@ public class JdbcNativeCommentRepository implements CommentRepository {
 	 * @return уникальный идентификатор комментария
 	 */
 	@Override
+	@Transactional
 	public Long create(CommentCreateDTO commentDTO) {
 		// Используем keyHolder для получения уникального идентификаотра записи
 		KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -88,24 +90,21 @@ public class JdbcNativeCommentRepository implements CommentRepository {
 	 * @param id Уникальный идентификтор комментария
 	 */
 	@Override
+	@Transactional
 	public void delete(Long id) {
 		KeyHolder keyHolder = new GeneratedKeyHolder();
 		String sql = "delete from comments where id = ? returning postid";
-		try {
-			jdbcTemplate.update(
-					connection -> {
-						PreparedStatement ps = connection.prepareStatement(sql, new String[]{"postid"});
-						ps.setLong(1, id);
-						return ps;
-					},
-					keyHolder
-			);
+		jdbcTemplate.update(
+				connection -> {
+					PreparedStatement ps = connection.prepareStatement(sql, new String[]{"postid"});
+					ps.setLong(1, id);
+					return ps;
+				},
+				keyHolder
+		);
 
-			jdbcTemplate.update("update posts set commentsCount = commentscount - 1 WHERE id = ?",
-					Objects.requireNonNull(keyHolder.getKey()).longValue()
-			);
-		} catch (Exception ex) {
-			throw new RuntimeException("Error deleting comment with id " + id);
-		}
+		jdbcTemplate.update("update posts set commentsCount = commentscount - 1 WHERE id = ?",
+				Objects.requireNonNull(keyHolder.getKey()).longValue()
+		);
 	}
 }

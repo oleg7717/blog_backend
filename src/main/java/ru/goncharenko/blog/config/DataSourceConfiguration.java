@@ -8,8 +8,10 @@ import org.springframework.context.event.EventListener;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
 import java.util.Objects;
@@ -29,6 +31,11 @@ public class DataSourceConfiguration {
 		dataSource.setPassword(env.getProperty("spring.datasource.password"));
 
 		return dataSource;
+	}
+
+	@Bean
+	public PlatformTransactionManager transactionManager() {
+		return new DataSourceTransactionManager(dataSource());
 	}
 
 	// JdbcTemplate — компонент для выполнения запросов

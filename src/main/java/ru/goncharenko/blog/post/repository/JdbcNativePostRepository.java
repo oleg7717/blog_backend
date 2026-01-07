@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import ru.goncharenko.blog.post.dto.PostCreateDTO;
 import ru.goncharenko.blog.post.dto.PostUpdateDTO;
 import ru.goncharenko.blog.post.model.Post;
@@ -102,6 +103,7 @@ public class JdbcNativePostRepository implements PostRepository {
 	}
 
 	@Override
+	@Transactional
 	public Long create(PostCreateDTO postDTO) {
 		// Используем keyHolder для получения уникального идентификаотра записи с помощью returning в sql-запросе
 		KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -133,6 +135,7 @@ public class JdbcNativePostRepository implements PostRepository {
 	 * @return обновленная запись поста
 	 */
 	@Override
+	@Transactional
 	public Optional<Post> update(PostUpdateDTO postDTO) {
 		jdbcTemplate.update("update posts set title = ?, text = ? where id = ?",
 				postDTO.getTitle(),
