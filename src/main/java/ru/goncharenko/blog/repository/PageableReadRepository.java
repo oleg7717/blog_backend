@@ -3,13 +3,13 @@ package ru.goncharenko.blog.repository;
 import java.util.List;
 
 public interface PageableReadRepository<T> {
-	Long recordsCount();
+	Long countAllRecords();
 
-	Long recordsCountByTagsAndSubstring(String search, int tagsCount, List<String> tags);
+	Long countByTagsAndSubstring(String search, int tagsCount, List<String> tags);
 
-	Long recordsCountBySubstring(String search);
+	Long countBySubstring(String search);
 
-	Long recordsCountByTags(int tagsCount, List<String> tags);
+	Long countByTags(int tagsCount, List<String> tags);
 
 	List<T> getRecords(int limit, int offset);
 

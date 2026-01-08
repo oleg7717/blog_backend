@@ -12,7 +12,10 @@ import ru.goncharenko.blog.post.dto.PostCreateDTO;
 import ru.goncharenko.blog.post.dto.PostUpdateDTO;
 import ru.goncharenko.blog.post.model.Post;
 
+import java.sql.Array;
 import java.sql.PreparedStatement;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -20,8 +23,9 @@ import java.util.Optional;
 @Repository
 public class JdbcNativePostRepository implements PostRepository {
 	private final JdbcTemplate jdbcTemplate;
-	private final String SELECT_FROM_POST = "select p.* from posts p ";
+	private final String SELECT_FROM_POST = "select p.*, array_agg(t.tagname) as tags from posts p ";
 	private final String SELECT_COUNT_FROM_POST = "select count(id) from posts p ";
+	private final String JOIN_TAGS = "left join tags t on t.postid = p.id ";
 	private final String SEARCH_BY_TAGS = """
 			p.id in (
 			    select postid
@@ -32,20 +36,21 @@ public class JdbcNativePostRepository implements PostRepository {
 			)
 			""";
 	private final String SERCH_BY_STRING = "p.title like ? ";
-	private final String ORDER_BY = "order by p.id limit ? offset ?";
+	private final String GROUP_BY = "group by p.id, p.title, p.text, p.likescount, p.commentscount ";
+	private final String ORDER_BY = "order by p.id limit ? offset ? ";
 
 	public JdbcNativePostRepository(JdbcTemplate jdbcTemplate) {
 		this.jdbcTemplate = jdbcTemplate;
 	}
 
 	@Override
-	public Long recordsCount() {
+	public Long countAllRecords() {
 		Long count = jdbcTemplate.queryForObject(SELECT_COUNT_FROM_POST, Long.class);
 		return count != null ? count : 0;
 	}
 
 	@Override
-	public Long recordsCountByTagsAndSubstring(String search, int tagsCount, List<String> tags) {
+	public Long countByTagsAndSubstring(String search, int tagsCount, List<String> tags) {
 		List<Long> count = jdbcTemplate.query(
 				connection -> {
 					PreparedStatement ps = connection.prepareStatement(
@@ -64,7 +69,7 @@ public class JdbcNativePostRepository implements PostRepository {
 	}
 
 	@Override
-	public Long recordsCountBySubstring(String search) {
+	public Long countBySubstring(String search) {
 		List<Long> count = jdbcTemplate.query(
 				connection -> {
 					PreparedStatement ps = connection.prepareStatement(
@@ -80,7 +85,7 @@ public class JdbcNativePostRepository implements PostRepository {
 	}
 
 	@Override
-	public Long recordsCountByTags(int tagsCount, List<String> tags) {
+	public Long countByTags(int tagsCount, List<String> tags) {
 		List<Long> count = jdbcTemplate.query(
 				connection -> {
 					PreparedStatement ps = connection.prepareStatement(
@@ -100,7 +105,11 @@ public class JdbcNativePostRepository implements PostRepository {
 	public List<Post> getRecords(int limit, int offset) {
 		return jdbcTemplate.query(
 				connection -> {
-					PreparedStatement ps = connection.prepareStatement(SELECT_FROM_POST + ORDER_BY);
+					PreparedStatement ps = connection.prepareStatement(SELECT_FROM_POST +
+							JOIN_TAGS +
+							GROUP_BY +
+							ORDER_BY
+							);
 					ps.setInt(1, limit);
 					ps.setInt(2, offset);
 					return ps;
@@ -114,10 +123,13 @@ public class JdbcNativePostRepository implements PostRepository {
 		return jdbcTemplate.query(
 				connection -> {
 					PreparedStatement ps = connection.prepareStatement(
-							SELECT_FROM_POST + "where " +
+							SELECT_FROM_POST +
+									JOIN_TAGS + "where " +
 									SEARCH_BY_TAGS + " and " +
 									SERCH_BY_STRING +
-									ORDER_BY);
+									GROUP_BY +
+									ORDER_BY
+									);
 					ps.setArray(1, connection.createArrayOf("text", tags.toArray()));
 					ps.setInt(2, tagsCount);
 					ps.setString(3, "%" + search + "%");
@@ -134,8 +146,10 @@ public class JdbcNativePostRepository implements PostRepository {
 		return jdbcTemplate.query(
 				connection -> {
 					PreparedStatement ps = connection.prepareStatement(
-							SELECT_FROM_POST + "where " +
+							SELECT_FROM_POST +
+									JOIN_TAGS + "where " +
 									SERCH_BY_STRING +
+									GROUP_BY +
 									ORDER_BY);
 					ps.setString(1, "%" + search + "%");
 					ps.setInt(2, limit);
@@ -151,8 +165,10 @@ public class JdbcNativePostRepository implements PostRepository {
 		return jdbcTemplate.query(
 				connection -> {
 					PreparedStatement ps = connection.prepareStatement(
-							SELECT_FROM_POST + "where " +
+							SELECT_FROM_POST +
+									JOIN_TAGS + "where " +
 									SEARCH_BY_TAGS +
+									GROUP_BY +
 									ORDER_BY);
 					ps.setArray(1, connection.createArrayOf("varchar", tags.toArray()));
 					ps.setInt(2, tagsCount);
@@ -167,23 +183,32 @@ public class JdbcNativePostRepository implements PostRepository {
 	@Override
 	public Optional<Post> findById(Long id) {
 		return Optional.ofNullable(DataAccessUtils.singleResult(jdbcTemplate.query(
-				"select * from posts where id = " + id,
+				SELECT_FROM_POST + JOIN_TAGS + "where p.id = " + id + " " + GROUP_BY,
 				map()
 		)));
 	}
 
 	private RowMapper<Post> map() {
-		return (rs, rowNum) -> new Post(
+		return (rs, rowNum) -> {Post post = new Post(
 				rs.getLong("id"),
 				rs.getString("title"),
 				rs.getString("text"),
-				jdbcTemplate.query(
-						"select tagname from tags where postid = " + rs.getLong("id"),
-						(resultSet, rowNumber) -> resultSet.getString("tagName")
-				),
+				Collections.emptyList(),
 				rs.getLong("likescount"),
 				rs.getInt("commentscount")
-		);
+			);
+
+			// Получаем массив тегов из результата
+			Array tagsArray = rs.getArray("tags");
+			if (tagsArray != null) {
+				List<String> tagsList = Arrays.asList((String[]) tagsArray.getArray());
+				if (tagsList.getFirst() != null) {
+					post.setTags(tagsList);
+				}
+			}
+
+			return post;
+		};
 	}
 
 	@Override

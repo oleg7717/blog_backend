@@ -32,16 +32,16 @@ public class PostService {
 		long count;
 		if (!searchString.isEmpty() && !tags.isEmpty()) {
 			posts = repository.searchByTagsAndSubstring(searchString, tags.size(), tags, pageSize, offset);
-			count = repository.recordsCountByTagsAndSubstring(searchString, tags.size(), tags);
+			count = repository.countByTagsAndSubstring(searchString, tags.size(), tags);
 		} else if (!searchString.isEmpty()) {
 			posts = repository.searchBySubstring(searchString, pageSize, offset);
-			count = repository.recordsCountBySubstring(searchString);
+			count = repository.countBySubstring(searchString);
 		} else if (!tags.isEmpty()){
 			posts = repository.searchByTags(tags.size(), tags, pageSize, offset);
-			count = repository.recordsCountByTags(tags.size(), tags);
+			count = repository.countByTags(tags.size(), tags);
 		} else {
 			posts = repository.getRecords(pageSize, offset);
-			count = repository.recordsCount();
+			count = repository.countAllRecords();
 		}
 
 		int pages = (int) Math.ceilDiv(count, pageSize);
