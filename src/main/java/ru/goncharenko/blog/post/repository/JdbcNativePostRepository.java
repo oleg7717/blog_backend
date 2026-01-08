@@ -24,13 +24,13 @@ public class JdbcNativePostRepository implements PostRepository {
 			p.id in (
 			    select postid
 			    from tags
-			    where tagname in (%s)
+			    where tagname = any(?)
 			    group by postid
-			    having count(distinct tagname) = %d
+			    having count(distinct tagname) = ?
 			)
 			""";
-	private final String SERCH_BY_STRING = "p.title like '%%%s%%' ";
-	private final String ORDER_BY = "order by p.id limit %d offset %d";
+	private final String SERCH_BY_STRING = "p.title like ? ";
+	private final String ORDER_BY = "order by p.id limit ? offset ?";
 
 	public JdbcNativePostRepository(JdbcTemplate jdbcTemplate) {
 		this.jdbcTemplate = jdbcTemplate;
@@ -44,18 +44,32 @@ public class JdbcNativePostRepository implements PostRepository {
 	@Override
 	public List<Post> getRecords(int limit, int offset) {
 		return jdbcTemplate.query(
-					SELECT_FROM_POST + ORDER_BY.formatted(limit, offset),
+				connection -> {
+					PreparedStatement ps = connection.prepareStatement(SELECT_FROM_POST + ORDER_BY);
+					ps.setInt(1, limit);
+					ps.setInt(2, offset);
+					return ps;
+				},
 				map()
 		);
 	}
 
 	@Override
-	public List<Post> searchByTagsAndSubstring(String search, int tagsCount, String tags, int limit, int offset) {
+	public List<Post> searchByTagsAndSubstring(String search, int tagsCount, List<String> tags, int limit, int offset) {
 		return jdbcTemplate.query(
-				SELECT_FROM_POST + "where " +
-						SEARCH_BY_TAGS.formatted(tags, tagsCount) + " and " +
-						SERCH_BY_STRING.formatted(search) +
-						ORDER_BY.formatted(limit, offset),
+				connection -> {
+					PreparedStatement ps = connection.prepareStatement(
+							SELECT_FROM_POST + "where " +
+									SEARCH_BY_TAGS + " and " +
+									SERCH_BY_STRING +
+									ORDER_BY);
+					ps.setArray(1, connection.createArrayOf("text", tags.toArray()));
+					ps.setInt(2, tagsCount);
+					ps.setString(3, "%" + search + "%");
+					ps.setInt(4, limit);
+					ps.setInt(5, offset);
+					return ps;
+				},
 				map()
 		);
 	}
@@ -63,19 +77,34 @@ public class JdbcNativePostRepository implements PostRepository {
 	@Override
 	public List<Post> searchBySubstring(String search, int limit, int offset) {
 		return jdbcTemplate.query(
-				SELECT_FROM_POST + "where " +
-						SERCH_BY_STRING.formatted(search) +
-						ORDER_BY.formatted(limit, offset),
+				connection -> {
+					PreparedStatement ps = connection.prepareStatement(
+							SELECT_FROM_POST + "where " +
+									SERCH_BY_STRING +
+									ORDER_BY);
+					ps.setString(1, "%" + search + "%");
+					ps.setInt(2, limit);
+					ps.setInt(3, offset);
+					return ps;
+				},
 				map()
 		);
 	}
 
 	@Override
-	public List<Post> searchByTags(int tagsCount, String tags, int limit, int offset) {
+	public List<Post> searchByTags(int tagsCount, List<String> tags, int limit, int offset) {
 		return jdbcTemplate.query(
-				SELECT_FROM_POST + "where " +
-						SEARCH_BY_TAGS.formatted(tags, tagsCount) +
-						ORDER_BY.formatted(limit, offset),
+				connection -> {
+					PreparedStatement ps = connection.prepareStatement(
+							SELECT_FROM_POST + "where " +
+									SEARCH_BY_TAGS +
+									ORDER_BY);
+					ps.setArray(1, connection.createArrayOf("varchar", tags.toArray()));
+					ps.setInt(2, tagsCount);
+					ps.setInt(3, limit);
+					ps.setInt(4, offset);
+					return ps;
+				},
 				map()
 		);
 	}

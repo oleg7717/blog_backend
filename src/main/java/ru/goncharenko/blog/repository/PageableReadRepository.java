@@ -7,9 +7,9 @@ public interface PageableReadRepository<T> {
 
 	List<T> getRecords(int limit, int offset);
 
-	List<T> searchByTagsAndSubstring(String search, int tagsCount, String tags, int limit, int offset);
+	List<T> searchByTagsAndSubstring(String search, int tagsCount, List<String> tags, int limit, int offset);
 
 	List<T> searchBySubstring(String search, int limit, int offset);
 
-	List<T> searchByTags(int tagsCount, String tags, int limit, int offset);
+	List<T> searchByTags(int tagsCount, List<String> tags, int limit, int offset);
 }

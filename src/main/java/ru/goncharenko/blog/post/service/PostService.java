@@ -27,19 +27,15 @@ public class PostService {
 
 	public PostListResponse<List<Post>> getPosts(String search, int pageSize, int pageNumber) {
 		String searchString = TextUtils.getSearchString(search);
-		TreeMap<Integer, String> tags = TextUtils.getTags(search);
+		List<String> tags = TextUtils.getTags(search);
 		List<Post> posts;
 		int offset = (pageNumber - 1) * pageSize;
 		if (!searchString.isEmpty() && !tags.isEmpty()) {
-			posts = repository.searchByTagsAndSubstring(searchString,
-					tags.firstEntry().getKey(),
-					tags.firstEntry().getValue(),
-					pageSize,
-					offset);
+			posts = repository.searchByTagsAndSubstring(searchString, tags.size(), tags, pageSize, offset);
 		} else if (!searchString.isEmpty()) {
 			posts = repository.searchBySubstring(searchString, pageSize, offset);
 		} else if (!tags.isEmpty()){
-			posts = repository.searchByTags(tags.firstEntry().getKey(), tags.firstEntry().getValue(), pageSize, offset);
+			posts = repository.searchByTags(tags.size(), tags, pageSize, offset);
 		} else {
 			posts = repository.getRecords(pageSize, offset);
 		}

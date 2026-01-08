@@ -2,8 +2,8 @@ package ru.goncharenko.blog.utils;
 
 import ru.goncharenko.blog.post.model.Post;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.TreeMap;
 
 public class TextUtils {
 	private static final int SUBSTRING_TO = 128;
@@ -19,7 +19,7 @@ public class TextUtils {
 		if (search != null) {
 			String[] serchArr = search.split(" ");
 			for (String searchWord : serchArr) {
-				if (!searchWord.startsWith("#") && searchWord.length() > 1) {
+				if (!searchWord.startsWith("#")) {
 					searchSubstring.append(searchWord).append(" ");
 				}
 			}
@@ -28,27 +28,17 @@ public class TextUtils {
 		return searchSubstring.toString().trim();
 	}
 
-	public static TreeMap<Integer, String> getTags(String search) {
-		TreeMap<Integer, String> tags = new TreeMap<>();
+	public static List<String> getTags(String search) {
+		List<String> tagsArray = new ArrayList<>();
 		if (search != null) {
 			String[] serchArr = search.split(" ");
-			StringBuilder tagsString = new StringBuilder();
-			int tagsCount = 0;
 			for (String searchWord : serchArr) {
 				if (searchWord.startsWith("#") && searchWord.length() > 1) {
-					tagsString.append("'");
-					tagsString.append(searchWord.substring(1));
-					tagsString.append("', ");
-					tagsCount++;
+					tagsArray.add(searchWord.substring(1));
 				}
 			}
-
-			if (!tagsString.isEmpty()) {
-				tags.put(tagsCount, tagsString.substring(0, tagsString.length() - 2));
-			}
-
 		}
 
-		return tags;
+		return tagsArray;
 	}
 }
