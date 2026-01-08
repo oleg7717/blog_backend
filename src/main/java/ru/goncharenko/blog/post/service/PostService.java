@@ -13,7 +13,6 @@ import ru.goncharenko.blog.post.repository.PostRepository;
 import ru.goncharenko.blog.utils.TextUtils;
 
 import java.util.List;
-import java.util.TreeMap;
 
 @Service
 public class PostService {
@@ -30,17 +29,22 @@ public class PostService {
 		List<String> tags = TextUtils.getTags(search);
 		List<Post> posts;
 		int offset = (pageNumber - 1) * pageSize;
+		long count;
 		if (!searchString.isEmpty() && !tags.isEmpty()) {
 			posts = repository.searchByTagsAndSubstring(searchString, tags.size(), tags, pageSize, offset);
+			count = repository.recordsCountByTagsAndSubstring(searchString, tags.size(), tags);
 		} else if (!searchString.isEmpty()) {
 			posts = repository.searchBySubstring(searchString, pageSize, offset);
+			count = repository.recordsCountBySubstring(searchString);
 		} else if (!tags.isEmpty()){
 			posts = repository.searchByTags(tags.size(), tags, pageSize, offset);
+			count = repository.recordsCountByTags(tags.size(), tags);
 		} else {
 			posts = repository.getRecords(pageSize, offset);
+			count = repository.recordsCount();
 		}
 
-		int pages = (int) Math.ceilDiv(repository.recordsCount(), pageSize);
+		int pages = (int) Math.ceilDiv(count, pageSize);
 		boolean hasPrev = pages > 1 && pageNumber > 1;
 		boolean hasNext = pages > 1 && pageNumber < pages;
 

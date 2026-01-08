@@ -5,6 +5,12 @@ import java.util.List;
 public interface PageableReadRepository<T> {
 	Long recordsCount();
 
+	Long recordsCountByTagsAndSubstring(String search, int tagsCount, List<String> tags);
+
+	Long recordsCountBySubstring(String search);
+
+	Long recordsCountByTags(int tagsCount, List<String> tags);
+
 	List<T> getRecords(int limit, int offset);
 
 	List<T> searchByTagsAndSubstring(String search, int tagsCount, List<String> tags, int limit, int offset);

@@ -3,6 +3,7 @@ package ru.goncharenko.blog.post.repository;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
@@ -20,6 +21,7 @@ import java.util.Optional;
 public class JdbcNativePostRepository implements PostRepository {
 	private final JdbcTemplate jdbcTemplate;
 	private final String SELECT_FROM_POST = "select p.* from posts p ";
+	private final String SELECT_COUNT_FROM_POST = "select count(id) from posts p ";
 	private final String SEARCH_BY_TAGS = """
 			p.id in (
 			    select postid
@@ -36,9 +38,62 @@ public class JdbcNativePostRepository implements PostRepository {
 		this.jdbcTemplate = jdbcTemplate;
 	}
 
+	@Override
 	public Long recordsCount() {
-		Long count = jdbcTemplate.queryForObject("select count(id) from posts", Long.class);
+		Long count = jdbcTemplate.queryForObject(SELECT_COUNT_FROM_POST, Long.class);
 		return count != null ? count : 0;
+	}
+
+	@Override
+	public Long recordsCountByTagsAndSubstring(String search, int tagsCount, List<String> tags) {
+		List<Long> count = jdbcTemplate.query(
+				connection -> {
+					PreparedStatement ps = connection.prepareStatement(
+							SELECT_COUNT_FROM_POST + "where " +
+									SEARCH_BY_TAGS + " and " +
+									SERCH_BY_STRING);
+					ps.setArray(1, connection.createArrayOf("text", tags.toArray()));
+					ps.setInt(2, tagsCount);
+					ps.setString(3, "%" + search + "%");
+					return ps;
+				},
+				new SingleColumnRowMapper<>(Long.class)
+		);
+
+		return count.stream().findFirst().orElse(0L);
+	}
+
+	@Override
+	public Long recordsCountBySubstring(String search) {
+		List<Long> count = jdbcTemplate.query(
+				connection -> {
+					PreparedStatement ps = connection.prepareStatement(
+							SELECT_COUNT_FROM_POST + "where " +
+									SERCH_BY_STRING);
+					ps.setString(1, "%" + search + "%");
+					return ps;
+				},
+				new SingleColumnRowMapper<>(Long.class)
+		);
+
+		return count.stream().findFirst().orElse(0L);
+	}
+
+	@Override
+	public Long recordsCountByTags(int tagsCount, List<String> tags) {
+		List<Long> count = jdbcTemplate.query(
+				connection -> {
+					PreparedStatement ps = connection.prepareStatement(
+							SELECT_COUNT_FROM_POST + "where " +
+									SEARCH_BY_TAGS);
+					ps.setArray(1, connection.createArrayOf("text", tags.toArray()));
+					ps.setInt(2, tagsCount);
+					return ps;
+				},
+				new SingleColumnRowMapper<>(Long.class)
+		);
+
+		return count.stream().findFirst().orElse(0L);
 	}
 
 	@Override
