@@ -1,9 +1,6 @@
 package ru.goncharenko.blog.utils;
 
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
-import ru.goncharenko.blog.exception.ResourceNotFoundException;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -30,18 +27,13 @@ public class FileUtils {
 		return (dotIndex == -1) ? fileName : fileName.substring(0, dotIndex);
 	}
 
-	public static Resource findFile(Path uploadDir, long postId) throws IOException {
+	public static Optional<Path> findPath(Path uploadDir, long postId) throws IOException {
 		try (Stream<Path> files = Files.walk(uploadDir)) {
-			Optional<Path> foundFile = files
+			return files
 					.filter(Files::isRegularFile)
 					.filter(path -> FileUtils.getFileNameWithoutExtension(path)
 							.equalsIgnoreCase("post" + postId + "_image"))
 					.findFirst();
-			if (foundFile.isPresent()) {
-				return new ByteArrayResource(Files.readAllBytes(foundFile.get()));
-			}
-
-			throw new ResourceNotFoundException("Image file for post not found");
 		}
 	}
 }

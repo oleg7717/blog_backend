@@ -85,8 +85,8 @@ public class PostController {
 	@DeleteMapping(path = "/{id}")
 	@ResponseStatus(HttpStatus.OK)
 	public void delete(@PathVariable("id") long id) {
-		// ToDo удалять картинку при удалении поста
 		service.delete(id);
+		filesService.delete(id);
 	}
 
 	@PostMapping(path = "/{id}/likes")
