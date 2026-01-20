@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import ru.goncharenko.blog.dto.BaseDTO;
 
 import java.util.List;
 
@@ -13,7 +12,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PostUpdateDTO implements BaseDTO {
+public class PostUpdateDTO {
 	@NotNull(message = "Id cannot be null")
 	private long id;
 	@NotNull(message = "Title cannot be null")

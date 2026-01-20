@@ -1,11 +1,11 @@
 package ru.goncharenko.blog.post.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import ru.goncharenko.blog.dto.BaseDTO;
 
 import java.util.List;
 
@@ -13,10 +13,11 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PostCreateDTO implements BaseDTO {
+public class PostCreateDTO {
+	@NotBlank(message = "Title cannot be blank")
 	@NotNull(message = "Title cannot be null")
 	private String title;
-	@NotNull(message = "Text cannot be null")
+	@NotBlank(message = "Text cannot be null")
 	private String text;
 	@NotNull(message = "Tags list cannot be null")
 	private List<String> tags;
