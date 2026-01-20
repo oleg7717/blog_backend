@@ -13,8 +13,8 @@ import ru.goncharenko.blog.comment.model.Comment;
 		componentModel = MappingConstants.ComponentModel.SPRING,
 		unmappedTargetPolicy = ReportingPolicy.IGNORE
 )
-public interface CommentMapper {
-	SingleCommentResponse map(Comment comment);
+public abstract class CommentMapper {
+	public abstract SingleCommentResponse map(Comment comment);
 
-	SingleCommentResponse mapDtoToComment(CommentCreateDTO comment);
+	public abstract SingleCommentResponse mapDtoToComment(CommentCreateDTO comment);
 }

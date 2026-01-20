@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: blog
+  profiles:
+    active: prod
+# Servlet configurations
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 15MB
+# SQL & DB configurations
+  sql:
+    init:
+      mode: always
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: none
+
+  main:
+    banner-mode: off
