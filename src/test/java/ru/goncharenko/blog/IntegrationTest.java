@@ -2,6 +2,7 @@ package ru.goncharenko.blog;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -14,6 +15,9 @@ public abstract class IntegrationTest {
 	JdbcTemplate jdbcTemplate;
 
 	MockMvc mockMvc;
+
+	@Value("${spring.datasource.url:}")
+	private String datasourceUrl;
 
 /*	static PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer<>("postgres:15")
 			.withDatabaseName("postgres")
@@ -35,10 +39,7 @@ public abstract class IntegrationTest {
 		jdbcTemplate.execute("delete from comments;");
 		jdbcTemplate.execute("delete from tags;");
 		jdbcTemplate.execute("delete from posts;");
-		jdbcTemplate.execute("ALTER TABLE comments ALTER COLUMN id RESTART WITH 1;");
-		jdbcTemplate.execute("ALTER TABLE posts ALTER COLUMN id RESTART WITH 1;");
-//		jdbcTemplate.execute("ALTER SEQUENCE comments_id_seq RESTART WITH 1;");
-//		jdbcTemplate.execute("ALTER SEQUENCE posts_id_seq RESTART WITH 1;");
+		resetSequences();
 
 		jdbcTemplate.execute("insert into posts(title, text, likesCount, commentsCount) values ('Пост про спорт'," +
 				"'Нет ничего проще, чем составить символическую сборную лучших баскетболистов XXI века в рамках " +
@@ -56,5 +57,15 @@ public abstract class IntegrationTest {
 		jdbcTemplate.execute("insert into comments(postid, text) values (1, 'Комментарий к посту 1');");
 		jdbcTemplate.execute("insert into comments(postid, text) values (3, 'Первый комментарий к посту 3');");
 		jdbcTemplate.execute("insert into comments(postid, text) values (3, 'Второй комментарий к посту 3');");
+	}
+
+	private void resetSequences() {
+		if (datasourceUrl.contains(":h2:")) {
+			jdbcTemplate.execute("ALTER TABLE comments ALTER COLUMN id RESTART WITH 1;");
+			jdbcTemplate.execute("ALTER TABLE posts ALTER COLUMN id RESTART WITH 1;");
+		} else if (datasourceUrl.contains(":postgresql:")) {
+			jdbcTemplate.execute("ALTER SEQUENCE comments_id_seq RESTART WITH 1;");
+			jdbcTemplate.execute("ALTER SEQUENCE posts_id_seq RESTART WITH 1;");
+		}
 	}
 }
