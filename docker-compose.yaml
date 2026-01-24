@@ -16,7 +16,7 @@ services:
 
   backend:
     build: .
-    container_name: java_backend
+    container_name: blog_app
     restart: always
     ports:
       - "8080:8080"
