@@ -1,8 +1,6 @@
 spring:
-  application:
-    name: blog
   profiles:
-    active: prod
+    active: dev
 # Servlet configurations
   servlet:
     multipart:

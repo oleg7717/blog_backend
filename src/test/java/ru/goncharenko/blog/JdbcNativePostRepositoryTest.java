@@ -2,9 +2,7 @@ package ru.goncharenko.blog;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
-import ru.goncharenko.blog.config.BlogAppConfig;
-import ru.goncharenko.blog.config.WebConfig;
+import org.springframework.boot.test.context.SpringBootTest;
 import ru.goncharenko.blog.post.dto.PostCreateDTO;
 import ru.goncharenko.blog.post.model.Post;
 import ru.goncharenko.blog.post.repository.PostRepository;
@@ -15,10 +13,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringJUnitConfig(classes = {
-		BlogAppConfig.class,
-		WebConfig.class
-})
+@SpringBootTest
 public class JdbcNativePostRepositoryTest extends IntegrationTest {
 	@Autowired
 	private PostRepository repository;

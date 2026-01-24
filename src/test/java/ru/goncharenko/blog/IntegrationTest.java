@@ -3,16 +3,9 @@ package ru.goncharenko.blog;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-
-@WebAppConfiguration
-@TestPropertySource(locations = "classpath:application-test.properties")
-@ActiveProfiles("test")
 
 public abstract class IntegrationTest {
 	@Autowired
@@ -22,7 +15,7 @@ public abstract class IntegrationTest {
 
 	MockMvc mockMvc;
 
-	/*	static PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer<>("postgres:15")
+/*	static PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer<>("postgres:15")
 			.withDatabaseName("postgres")
 			.withUsername("postgres")
 			.withPassword("password");
@@ -44,6 +37,8 @@ public abstract class IntegrationTest {
 		jdbcTemplate.execute("delete from posts;");
 		jdbcTemplate.execute("ALTER TABLE comments ALTER COLUMN id RESTART WITH 1;");
 		jdbcTemplate.execute("ALTER TABLE posts ALTER COLUMN id RESTART WITH 1;");
+//		jdbcTemplate.execute("ALTER SEQUENCE comments_id_seq RESTART WITH 1;");
+//		jdbcTemplate.execute("ALTER SEQUENCE posts_id_seq RESTART WITH 1;");
 
 		jdbcTemplate.execute("insert into posts(title, text, likesCount, commentsCount) values ('Пост про спорт'," +
 				"'Нет ничего проще, чем составить символическую сборную лучших баскетболистов XXI века в рамках " +

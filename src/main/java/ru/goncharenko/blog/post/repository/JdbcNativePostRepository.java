@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Repository
 public class JdbcNativePostRepository implements PostRepository {
@@ -201,8 +202,11 @@ public class JdbcNativePostRepository implements PostRepository {
 			// Получаем массив тегов из результата
 			Array tagsArray = rs.getArray("tags");
 			if (tagsArray != null) {
-				List<String> tagsList = Arrays.asList((String[]) tagsArray.getArray());
-				if (tagsList.getFirst() != null) {
+				List<String> tagsList = Arrays.stream((Object[]) tagsArray.getArray())
+						.filter(Objects::nonNull)
+						.map(Object::toString)
+						.collect(Collectors.toList());
+				if (!tagsList.isEmpty()) {
 					post.setTags(tagsList);
 				}
 			}

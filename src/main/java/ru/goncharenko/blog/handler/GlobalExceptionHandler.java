@@ -1,11 +1,13 @@
 package ru.goncharenko.blog.handler;
 
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import ru.goncharenko.blog.exception.ValidationException;
 import ru.goncharenko.blog.response.ApiMessageResponse;
 import ru.goncharenko.blog.exception.ResourceNotFoundException;
 
@@ -17,6 +19,13 @@ public class GlobalExceptionHandler {
 	@ResponseStatus(HttpStatus.NOT_FOUND)
 	public ApiMessageResponse handleResourceNotFoundException(ResourceNotFoundException ex) {
 		return ApiMessageResponse.error(ex.getMessage(), HttpStatus.NOT_FOUND.value());
+	}
+
+	@ExceptionHandler(ValidationException.class)
+	@ResponseBody
+	@ResponseStatus(HttpStatus.UNPROCESSABLE_CONTENT)
+	public ApiMessageResponse handleValidationException(ValidationException ex) {
+		return ApiMessageResponse.error(ex.getMessage(), HttpStatus.UNPROCESSABLE_CONTENT.value());
 	}
 
 	@ExceptionHandler(Exception.class)
@@ -36,5 +45,12 @@ public class GlobalExceptionHandler {
 
 		return ApiMessageResponse
 				.error(String.join(". ", textErrors.toString().trim()), HttpStatus.BAD_REQUEST.value());
+	}
+
+	@ExceptionHandler(ConstraintViolationException.class)
+	@ResponseStatus(HttpStatus.UNPROCESSABLE_CONTENT)
+	@ResponseBody
+	public ApiMessageResponse handleConstraintViolationException(ConstraintViolationException ex) {
+		return ApiMessageResponse.error(ex.getMessage(), HttpStatus.UNPROCESSABLE_CONTENT.value());
 	}
 }

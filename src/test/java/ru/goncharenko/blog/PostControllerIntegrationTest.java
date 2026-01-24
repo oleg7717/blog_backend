@@ -1,22 +1,17 @@
 package ru.goncharenko.blog;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
-import ru.goncharenko.blog.config.BlogAppConfig;
-import ru.goncharenko.blog.config.WebConfig;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringJUnitConfig(classes = {
-		BlogAppConfig.class,
-		WebConfig.class
-})
+@SpringBootTest
 public class PostControllerIntegrationTest extends IntegrationTest {
 	@Test
 	void getPostsOnFirstPage() throws Exception {
@@ -44,9 +39,10 @@ public class PostControllerIntegrationTest extends IntegrationTest {
 		mockMvc.perform(get("/api/posts")
 						.param("pageNumber", "-1")
 						.param("pageSize", "2"))
-				.andExpect(status().is(HttpStatus.UNPROCESSABLE_ENTITY.value()))
+				.andExpect(status().is(HttpStatus.UNPROCESSABLE_CONTENT.value()))
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
-				.andExpect(jsonPath("$.message").value("Page number can not be less then one."));
+				.andExpect(jsonPath("$.message")
+						.value("index.pageNumber: Page number can not be less then one"));
 	}
 
 	@Test
@@ -155,7 +151,7 @@ public class PostControllerIntegrationTest extends IntegrationTest {
 		);
 
 		mockMvc.perform(multipart(HttpMethod.PUT,"/api/posts/{id}/image", 1L).file(empty))
-				.andExpect(status().is(HttpStatus.UNPROCESSABLE_ENTITY.value()))
+				.andExpect(status().is(HttpStatus.UNPROCESSABLE_CONTENT.value()))
 				.andExpect(jsonPath("$.message").value("Uploaded file is empty"));
 	}
 

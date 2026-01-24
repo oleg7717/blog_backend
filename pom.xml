@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>ru.goncharenko</groupId>
-	<artifactId>blog</artifactId>
+	<artifactId>spring-boot-blog</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
-	<name>blog</name>
+	<name>spring-boot-blog</name>
 	<description>Blog application on Spring Boot</description>
 	<properties>
 		<java.version>21</java.version>
@@ -30,10 +30,6 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-jdbc</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -63,8 +59,7 @@
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
-			<version>2.4.240</version>
-			<scope>provided</scope>
+			<scope>runtime</scope>
 		</dependency>
 
 
@@ -76,20 +71,9 @@
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-jdbc-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-<!--		<dependency>
-			<groupId>com.h2database</groupId>
-			<artifactId>h2</artifactId>
-			<version>2.4.240</version>
-			<scope>test</scope>
-		</dependency>-->
 	</dependencies>
 
 	<build>

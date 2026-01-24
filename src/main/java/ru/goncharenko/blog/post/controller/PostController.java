@@ -1,9 +1,12 @@
 package ru.goncharenko.blog.post.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,6 +33,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping(path = "/api/posts")
+@Validated
 public class PostController {
 	private final PostService service;
 	private final FilesService filesService;
@@ -40,13 +44,14 @@ public class PostController {
 	}
 
 	@GetMapping(path = "")
-	public PostListResponse<List<Post>> index(@RequestParam(required = false, name = "search") String search,
-	                                          @RequestParam(name = "pageSize") int pageSize,
-	                                          @RequestParam(name = "pageNumber") int pageNumber) {
-		if (pageNumber < 1) {
-			throw new ValidationException("Page number can not be less then one.");
-		}
-
+	public PostListResponse<List<Post>> index(
+			@RequestParam(required = false, name = "search") String search,
+			@RequestParam(name = "pageSize")
+			@Min(value = 1, message = "Page size can not be less then one")
+			@Max(value = 100, message = "Page size can not be more then 100") int pageSize,
+			@RequestParam(name = "pageNumber")
+			@Min(value = 1, message = "Page number can not be less then one") int pageNumber
+	) {
 		return service.getPosts(search, pageSize, pageNumber);
 	}
 
