@@ -1,5 +1,6 @@
 package ru.goncharenko.blog.comment.controller;
 
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,9 +16,7 @@ import ru.goncharenko.blog.comment.dto.CommentUpdateDTO;
 import ru.goncharenko.blog.comment.dto.SingleCommentResponse;
 import ru.goncharenko.blog.comment.model.Comment;
 import ru.goncharenko.blog.comment.service.CommentService;
-import ru.goncharenko.blog.dto.BaseDTO;
 import ru.goncharenko.blog.exception.ValidationException;
-import ru.goncharenko.blog.utils.ValidationUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,11 +25,9 @@ import java.util.List;
 @RequestMapping("/api/posts/{postid}/comments")
 public class CommentController {
 	private final CommentService service;
-	private final ValidationUtils<BaseDTO> validationUtils;
 
-	public CommentController(CommentService service, ValidationUtils<BaseDTO> validationUtils) {
+	public CommentController(CommentService service) {
 		this.service = service;
-		this.validationUtils = validationUtils;
 	}
 
 	@GetMapping(path = "")
@@ -52,8 +49,7 @@ public class CommentController {
 	@PostMapping(path = "")
 	@ResponseStatus(HttpStatus.CREATED)
 	public SingleCommentResponse newComment(@PathVariable("postid") Long postId,
-	                                        @RequestBody CommentCreateDTO commentDTO) {
-		validationUtils.validateDTO(commentDTO);
+	                                        @Valid @RequestBody CommentCreateDTO commentDTO) {
 		if (postId != commentDTO.getPostId()) {
 			throw new ValidationException("The post ID in the URL must match the post ID in the request body.");
 		}
@@ -65,8 +61,7 @@ public class CommentController {
 	@PutMapping(path = "/{id}")
 	public SingleCommentResponse update(@PathVariable("postid") Long postId,
 	                                    @PathVariable("id") long id,
-	                                    @RequestBody CommentUpdateDTO commentDTO) {
-		validationUtils.validateDTO(commentDTO);
+	                                    @Valid @RequestBody CommentUpdateDTO commentDTO) {
 		if (id != commentDTO.getId()) {
 			throw new ValidationException("The comment ID in the URL must match the comment ID in the request body.");
 		} else if (postId != commentDTO.getPostId()) {

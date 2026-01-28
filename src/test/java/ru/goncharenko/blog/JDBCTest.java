@@ -1,0 +1,51 @@
+package ru.goncharenko.blog;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.ActiveProfiles;
+
+@ActiveProfiles("test")
+public abstract class JDBCTest {
+	@Autowired
+	JdbcTemplate jdbcTemplate;
+
+	@Value("${spring.datasource.url:}")
+	private String datasourceUrl;
+
+	@BeforeEach
+	void setup() {
+		jdbcTemplate.execute("delete from comments;");
+		jdbcTemplate.execute("delete from tags;");
+		jdbcTemplate.execute("delete from posts;");
+		resetSequences();
+
+		jdbcTemplate.execute("insert into posts(title, text, likesCount, commentsCount) values ('Пост про спорт'," +
+				"'Нет ничего проще, чем составить символическую сборную лучших баскетболистов XXI века в рамках " +
+				"подведения итогов первых 25 лет. И именно поэтому одновременно нет и ничего сложнее:', " +
+				"0, 1);");
+		jdbcTemplate.execute("insert into posts(title, text, likesCount, commentsCount) values ('Пост про финансы', 'Текст поста', 0, 0);");
+		jdbcTemplate.execute("insert into posts(title, text, likesCount, commentsCount) values ('Пост про политику', 'Текст поста', 0, 2);");
+
+		jdbcTemplate.execute("insert into tags(postid, tagname) values (1, 'sport');");
+		jdbcTemplate.execute("insert into tags(postid, tagname) values (2, 'finance');");
+		jdbcTemplate.execute("insert into tags(postid, tagname) values (2, 'politic');");
+		jdbcTemplate.execute("insert into tags(postid, tagname) values (3, 'sport');");
+		jdbcTemplate.execute("insert into tags(postid, tagname) values (3, 'politic');");
+
+		jdbcTemplate.execute("insert into comments(postid, text) values (1, 'Комментарий к посту 1');");
+		jdbcTemplate.execute("insert into comments(postid, text) values (3, 'Первый комментарий к посту 3');");
+		jdbcTemplate.execute("insert into comments(postid, text) values (3, 'Второй комментарий к посту 3');");
+	}
+
+	private void resetSequences() {
+		if (datasourceUrl.contains(":h2:")) {
+			jdbcTemplate.execute("ALTER TABLE comments ALTER COLUMN id RESTART WITH 1;");
+			jdbcTemplate.execute("ALTER TABLE posts ALTER COLUMN id RESTART WITH 1;");
+		} else if (datasourceUrl.contains(":postgresql:")) {
+			jdbcTemplate.execute("ALTER SEQUENCE comments_id_seq RESTART WITH 1;");
+			jdbcTemplate.execute("ALTER SEQUENCE posts_id_seq RESTART WITH 1;");
+		}
+	}
+}

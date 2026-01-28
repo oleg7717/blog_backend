@@ -1,12 +1,17 @@
-FROM tomcat:11.0-jdk21-openjdk-slim
+# Use OpenJDK as base image (choose appropriate version)
+FROM eclipse-temurin:21-jre-alpine
 
-# Удаляем стандартные приложения Tomcat
-RUN rm -rf /usr/local/tomcat/webapps/*
+# Set working directory
+WORKDIR /app
 
-# Копируем WAR файл приложения
-COPY build/libs/*.war /usr/local/tomcat/webapps/ROOT.war
+# Set default profile via environment variable
+ENV SPRING_PROFILES_ACTIVE=prod
 
-# Экспортируем порт Tomcat
+# Copy the Spring Boot JAR from build directory
+COPY /target/*.jar app.jar
+
+# Expose the application port (default Spring Boot is 8080)
 EXPOSE 8080
 
-CMD ["catalina.sh", "run"]
+# Run the application
+ENTRYPOINT ["java", "-jar", "app.jar"]

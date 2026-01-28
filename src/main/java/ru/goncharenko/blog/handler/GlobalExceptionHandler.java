@@ -1,17 +1,18 @@
 package ru.goncharenko.blog.handler;
 
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.goncharenko.blog.exception.ValidationException;
 import ru.goncharenko.blog.response.ApiMessageResponse;
 import ru.goncharenko.blog.exception.ResourceNotFoundException;
 
-@ControllerAdvice
-public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+@RestControllerAdvice
+public class GlobalExceptionHandler {
 
 	@ExceptionHandler(ResourceNotFoundException.class)
 	@ResponseBody
@@ -22,17 +23,34 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
 	@ExceptionHandler(ValidationException.class)
 	@ResponseBody
-	@ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+	@ResponseStatus(HttpStatus.UNPROCESSABLE_CONTENT)
 	public ApiMessageResponse handleValidationException(ValidationException ex) {
-		return ApiMessageResponse.error(ex.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY.value());
+		return ApiMessageResponse.error(ex.getMessage(), HttpStatus.UNPROCESSABLE_CONTENT.value());
 	}
 
 	@ExceptionHandler(Exception.class)
-	@ResponseBody
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+	@ResponseBody
 	public ApiMessageResponse handleGenericException(Exception ex) {
+		return ApiMessageResponse.error(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
+	}
+
+	@ExceptionHandler(MethodArgumentNotValidException.class)
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ResponseBody
+	public ApiMessageResponse handleValidationExceptions(MethodArgumentNotValidException ex) {
+		StringBuilder textErrors = new StringBuilder();
+		ex.getBindingResult().getAllErrors()
+				.forEach(error -> textErrors.append(error.getDefaultMessage()).append(". "));
+
 		return ApiMessageResponse
-				.error("An unexpected error occurred: " + ex.getMessage(),
-						HttpStatus.INTERNAL_SERVER_ERROR.value());
+				.error(String.join(". ", textErrors.toString().trim()), HttpStatus.BAD_REQUEST.value());
+	}
+
+	@ExceptionHandler(ConstraintViolationException.class)
+	@ResponseStatus(HttpStatus.UNPROCESSABLE_CONTENT)
+	@ResponseBody
+	public ApiMessageResponse handleConstraintViolationException(ConstraintViolationException ex) {
+		return ApiMessageResponse.error(ex.getMessage(), HttpStatus.UNPROCESSABLE_CONTENT.value());
 	}
 }

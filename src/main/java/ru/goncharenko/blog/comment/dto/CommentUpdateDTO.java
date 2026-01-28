@@ -5,13 +5,12 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import ru.goncharenko.blog.dto.BaseDTO;
 
 @Setter
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CommentUpdateDTO implements BaseDTO {
+public class CommentUpdateDTO {
 	@NotNull(message = "Id cannot be null")
 	private long id;
 	@NotNull(message = "Text cannot be null")

@@ -2,7 +2,6 @@ package ru.goncharenko.blog.post.mapper;
 
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
@@ -27,10 +26,6 @@ public interface PostMapper {
 	SinglePostResponse postToSingleResponse(PostCreateDTO postDTO);
 
 	// Маппинг для списка постов со статусом
-	@Mapping(target = "posts", source = "posts")
-	@Mapping(target = "hasPrev", source = "hasPrev")
-	@Mapping(target = "hasNext", source = "hasNext")
-	@Mapping(target = "lastPage", source = "lastPage")
 	PostListResponse<List<Post>> toListResponse(
 			List<Post> posts,
 			Boolean hasPrev,

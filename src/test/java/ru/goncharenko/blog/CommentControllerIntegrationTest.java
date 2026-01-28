@@ -2,18 +2,11 @@ package ru.goncharenko.blog;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
-import ru.goncharenko.blog.config.BlogAppConfig;
-import ru.goncharenko.blog.config.WebConfig;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringJUnitConfig(classes = {
-		BlogAppConfig.class,
-		WebConfig.class
-})
 public class CommentControllerIntegrationTest extends IntegrationTest {
 	@Test
 	void getCommentsByPostId() throws Exception {
@@ -58,11 +51,11 @@ public class CommentControllerIntegrationTest extends IntegrationTest {
 	@Test
 	void updateComment() throws Exception {
 		String json = """
-		      		{
-		      			"id": 1,
-	      				"text": "Первый комментарий к посту 1",
-	      				"postId": 1
-		      		}
+				    		{
+				    			"id": 1,
+				  				"text": "Первый комментарий к посту 1",
+				   				"postId": 1
+				    		}
 				""";
 
 		mockMvc.perform(put("/api/posts/1/comments/1")

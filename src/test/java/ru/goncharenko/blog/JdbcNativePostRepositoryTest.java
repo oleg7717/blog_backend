@@ -2,12 +2,11 @@ package ru.goncharenko.blog;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
-import ru.goncharenko.blog.config.BlogAppConfig;
-import ru.goncharenko.blog.config.WebConfig;
+import org.springframework.boot.data.jdbc.test.autoconfigure.DataJdbcTest;
+import org.springframework.context.annotation.Import;
 import ru.goncharenko.blog.post.dto.PostCreateDTO;
 import ru.goncharenko.blog.post.model.Post;
-import ru.goncharenko.blog.post.repository.PostRepository;
+import ru.goncharenko.blog.post.repository.JdbcNativePostRepository;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,13 +14,11 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringJUnitConfig(classes = {
-		BlogAppConfig.class,
-		WebConfig.class
-})
-public class JdbcNativePostRepositoryTest extends IntegrationTest {
+@DataJdbcTest
+@Import(JdbcNativePostRepository.class)
+public class JdbcNativePostRepositoryTest extends JDBCTest {
 	@Autowired
-	private PostRepository repository;
+	private JdbcNativePostRepository repository;
 
 	@Test
 	void save_shouldAddPostToDatabase() {

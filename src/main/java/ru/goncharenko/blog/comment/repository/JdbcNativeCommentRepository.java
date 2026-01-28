@@ -96,19 +96,21 @@ public class JdbcNativeCommentRepository implements CommentRepository {
 	@Override
 	@Transactional
 	public void delete(Long id) {
-		KeyHolder keyHolder = new GeneratedKeyHolder();
-		String sql = "delete from comments where id = ? returning postid";
+		Long postId = DataAccessUtils.singleResult(jdbcTemplate.query(
+				"select postid from comments where id = ?",
+				(rs, rowNum) -> rs.getLong("postid"),
+				id
+		));
+
+		String sql = "delete from comments where id = ?";
 		jdbcTemplate.update(
 				connection -> {
-					PreparedStatement ps = connection.prepareStatement(sql, new String[]{"postid"});
+					PreparedStatement ps = connection.prepareStatement(sql);
 					ps.setLong(1, id);
 					return ps;
-				},
-				keyHolder
+				}
 		);
 
-		jdbcTemplate.update("update posts set commentsCount = commentscount - 1 WHERE id = ?",
-				Objects.requireNonNull(keyHolder.getKey()).longValue()
-		);
+		jdbcTemplate.update("update posts set commentsCount = commentscount - 1 WHERE id = ?", postId);
 	}
 }

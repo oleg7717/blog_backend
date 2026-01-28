@@ -5,18 +5,12 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
-import ru.goncharenko.blog.config.BlogAppConfig;
-import ru.goncharenko.blog.config.WebConfig;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringJUnitConfig(classes = {
-		BlogAppConfig.class,
-		WebConfig.class
-})
+
 public class PostControllerIntegrationTest extends IntegrationTest {
 	@Test
 	void getPostsOnFirstPage() throws Exception {
@@ -26,6 +20,7 @@ public class PostControllerIntegrationTest extends IntegrationTest {
 				.andExpect(status().isOk())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(jsonPath("$.posts", hasSize(2)))
+				.andExpect(jsonPath("$.hasNext").value("true"))
 				.andExpect(jsonPath("$.posts[1].tags", hasSize(2)));
 	}
 
@@ -44,14 +39,15 @@ public class PostControllerIntegrationTest extends IntegrationTest {
 		mockMvc.perform(get("/api/posts")
 						.param("pageNumber", "-1")
 						.param("pageSize", "2"))
-				.andExpect(status().is(HttpStatus.UNPROCESSABLE_ENTITY.value()))
+				.andExpect(status().is(HttpStatus.UNPROCESSABLE_CONTENT.value()))
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
-				.andExpect(jsonPath("$.message").value("Page number can not be less then one."));
+				.andExpect(jsonPath("$.message")
+						.value("index.pageNumber: Page number can not be less then one"));
 	}
 
 	@Test
 	void getPostsWithSearch() throws Exception {
-		mockMvc.perform(get("/api/posts?pageNumber=1&pageSize=2")
+		mockMvc.perform(get("/api/posts")
 						.param("search", "ро сп")
 						.param("pageNumber", "1")
 						.param("pageSize", "2"))
@@ -62,7 +58,7 @@ public class PostControllerIntegrationTest extends IntegrationTest {
 
 	@Test
 	void getPostsWithSearchByTags() throws Exception {
-		mockMvc.perform(get("/api/posts?pageNumber=1&pageSize=10")
+		mockMvc.perform(get("/api/posts")
 						.param("search", "Пост #sport")
 						.param("pageNumber", "1")
 						.param("pageSize", "10"))
@@ -73,12 +69,13 @@ public class PostControllerIntegrationTest extends IntegrationTest {
 
 	@Test
 	void getAllPosts() throws Exception {
-		mockMvc.perform(get("/api/posts?pageNumber=1&pageSize=10")
+		mockMvc.perform(get("/api/posts")
 						.param("pageNumber", "1")
 						.param("pageSize", "10"))
 				.andExpect(status().isOk())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(jsonPath("$.posts", hasSize(3)))
+				.andExpect(jsonPath("$.hasPrev").value("false"))
 				.andExpect(jsonPath("$.hasNext").value("false"));
 	}
 
@@ -109,7 +106,7 @@ public class PostControllerIntegrationTest extends IntegrationTest {
 				.andExpect(jsonPath("$.id").value(4))
 				.andExpect(jsonPath("$.title").value("Название поста 4"));
 
-		mockMvc.perform(get("/api/posts?pageNumber=1&pageSize=10")
+		mockMvc.perform(get("/api/posts")
 						.param("pageNumber", "1")
 						.param("pageSize", "10"))
 				.andExpect(status().isOk())
@@ -121,7 +118,7 @@ public class PostControllerIntegrationTest extends IntegrationTest {
 		mockMvc.perform(delete("/api/posts/4"))
 				.andExpect(status().isOk());
 
-		mockMvc.perform(get("/api/posts?pageNumber=1&pageSize=10")
+		mockMvc.perform(get("/api/posts")
 						.param("pageNumber", "1")
 						.param("pageSize", "10"))
 				.andExpect(status().isOk())
@@ -155,7 +152,7 @@ public class PostControllerIntegrationTest extends IntegrationTest {
 		);
 
 		mockMvc.perform(multipart(HttpMethod.PUT,"/api/posts/{id}/image", 1L).file(empty))
-				.andExpect(status().is(HttpStatus.UNPROCESSABLE_ENTITY.value()))
+				.andExpect(status().is(HttpStatus.UNPROCESSABLE_CONTENT.value()))
 				.andExpect(jsonPath("$.message").value("Uploaded file is empty"));
 	}
 
