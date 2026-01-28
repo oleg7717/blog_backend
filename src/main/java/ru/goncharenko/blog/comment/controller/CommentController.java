@@ -1,5 +1,6 @@
 package ru.goncharenko.blog.comment.controller;
 
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -48,7 +49,7 @@ public class CommentController {
 	@PostMapping(path = "")
 	@ResponseStatus(HttpStatus.CREATED)
 	public SingleCommentResponse newComment(@PathVariable("postid") Long postId,
-	                                        @RequestBody CommentCreateDTO commentDTO) {
+	                                        @Valid @RequestBody CommentCreateDTO commentDTO) {
 		if (postId != commentDTO.getPostId()) {
 			throw new ValidationException("The post ID in the URL must match the post ID in the request body.");
 		}
@@ -60,7 +61,7 @@ public class CommentController {
 	@PutMapping(path = "/{id}")
 	public SingleCommentResponse update(@PathVariable("postid") Long postId,
 	                                    @PathVariable("id") long id,
-	                                    @RequestBody CommentUpdateDTO commentDTO) {
+	                                    @Valid @RequestBody CommentUpdateDTO commentDTO) {
 		if (id != commentDTO.getId()) {
 			throw new ValidationException("The comment ID in the URL must match the comment ID in the request body.");
 		} else if (postId != commentDTO.getPostId()) {

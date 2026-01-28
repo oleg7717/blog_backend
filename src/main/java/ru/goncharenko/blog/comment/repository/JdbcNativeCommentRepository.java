@@ -97,8 +97,9 @@ public class JdbcNativeCommentRepository implements CommentRepository {
 	@Transactional
 	public void delete(Long id) {
 		Long postId = DataAccessUtils.singleResult(jdbcTemplate.query(
-				"select postid from comments where id = " + id,
-				(rs, rowNum) -> rs.getLong("postid")
+				"select postid from comments where id = ?",
+				(rs, rowNum) -> rs.getLong("postid"),
+				id
 		));
 
 		String sql = "delete from comments where id = ?";

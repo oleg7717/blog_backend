@@ -62,12 +62,12 @@ public class PostController {
 
 	@PostMapping(path = "")
 	@ResponseStatus(HttpStatus.CREATED)
-	public SinglePostResponse newPost(@Valid @RequestBody PostCreateDTO postDTO/*, BindingResult bindingResult*/) {
+	public SinglePostResponse newPost(@Valid @RequestBody PostCreateDTO postDTO) {
 		return service.newPost(postDTO);
 	}
 
 	@PutMapping(path = "/{id}")
-	public SinglePostResponse update(@PathVariable("id") long id, @RequestBody PostUpdateDTO postDTO) {
+	public SinglePostResponse update(@PathVariable("id") long id, @Valid @RequestBody PostUpdateDTO postDTO) {
 		if (id != postDTO.getId()) {
 			throw new ValidationException("The post ID in the URL must match the post ID in the request body.");
 		}
